@@ -18,10 +18,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -477,11 +479,14 @@ private fun NexcoreTopGlassHeader(
         Row(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(10.dp),
-          modifier = Modifier.clickable { onNavigate(NexcoreDestination.HOME) }
+          modifier = Modifier
+            .weight(1f)
+            .padding(end = 8.dp)
+            .clickable { onNavigate(NexcoreDestination.HOME) }
         ) {
           Box(
             modifier = Modifier
-              .size(42.dp)
+              .size(40.dp)
               .clip(RoundedCornerShape(12.dp))
               .background(SolidSoftWhite)
               .padding(6.dp),
@@ -493,29 +498,32 @@ private fun NexcoreTopGlassHeader(
               modifier = Modifier.fillMaxSize()
             )
           }
-          Column {
+          Column(modifier = Modifier.weight(1f)) {
             Text(
               text = "NEXCORE",
               style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 1.2.sp
               ),
-              color = TextDark
+              color = TextDark,
+              maxLines = 1
             )
             Text(
               text = "Construction Waste. Renewed Value.",
               style = MaterialTheme.typography.labelMedium,
-              color = TextSecondary
+              color = TextSecondary,
+              maxLines = 1,
+              overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
           }
         }
 
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(8.dp)
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
           LiquidPrimaryButton(
-            text = "Post a Listing",
+            text = "Post",
             icon = Icons.Default.Add,
             onClick = { onNavigate(NexcoreDestination.SELL_WASTE) },
             testTag = "header_post_listing_button"
@@ -562,34 +570,43 @@ private fun NexcoreBottomGlassBar(
   Box(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(horizontal = 12.dp, vertical = 8.dp),
+      .windowInsetsPadding(
+        androidx.compose.foundation.layout.WindowInsets.safeDrawing.only(
+          androidx.compose.foundation.layout.WindowInsetsSides.Bottom +
+            androidx.compose.foundation.layout.WindowInsetsSides.Horizontal
+        )
+      )
+      .padding(horizontal = 12.dp, vertical = 6.dp),
     contentAlignment = Alignment.Center
   ) {
     Row(
       modifier = Modifier
         .fillMaxWidth()
-        .widthIn(max = 600.dp)
-        .shadow(14.dp, RoundedCornerShape(50), ambientColor = Color.Black.copy(alpha = 0.12f))
-        .clip(RoundedCornerShape(50))
-        .background(SolidSoftWhite.copy(alpha = 0.88f))
-        .border(1.5.dp, Color.White, RoundedCornerShape(50))
-        .padding(horizontal = 8.dp, vertical = 6.dp),
-      horizontalArrangement = Arrangement.SpaceEvenly,
+        .widthIn(max = 520.dp)
+        .height(62.dp)
+        .shadow(12.dp, RoundedCornerShape(31.dp), ambientColor = Color.Black.copy(alpha = 0.12f))
+        .clip(RoundedCornerShape(31.dp))
+        .background(SolidSoftWhite.copy(alpha = 0.92f))
+        .border(1.5.dp, Color.White, RoundedCornerShape(31.dp))
+        .padding(horizontal = 6.dp, vertical = 4.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically
     ) {
       NexcoreDestination.entries.forEach { dest ->
         val selected = currentDestination == dest
         Column(
           modifier = Modifier
-            .clip(RoundedCornerShape(50))
+            .weight(1f)
+            .clip(RoundedCornerShape(24.dp))
             .clickable { onSelectDestination(dest) }
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .padding(vertical = 3.dp, horizontal = 2.dp)
             .testTag("bottom_nav_${dest.name.lowercase()}"),
-          horizontalAlignment = Alignment.CenterHorizontally
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.Center
         ) {
           Box(
             modifier = Modifier
-              .size(32.dp)
+              .size(28.dp)
               .clip(CircleShape)
               .background(
                 if (selected) PrimaryPurpleBrush else androidx.compose.ui.graphics.SolidColor(Color.Transparent)
@@ -600,14 +617,18 @@ private fun NexcoreBottomGlassBar(
               imageVector = dest.icon(),
               contentDescription = dest.title,
               tint = if (selected) TextLight else TextSecondary,
-              modifier = Modifier.size(18.dp)
+              modifier = Modifier.size(16.dp)
             )
           }
           Spacer(modifier = Modifier.height(2.dp))
           Text(
             text = dest.shortLabel(),
+            maxLines = 1,
+            softWrap = false,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             style = MaterialTheme.typography.labelMedium.copy(
               fontSize = 10.sp,
+              lineHeight = 11.sp,
               fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
               color = if (selected) AccentBluePurple else TextSecondary
             )
