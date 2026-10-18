@@ -1,0 +1,6 @@
+{
+  "name": "NEXCORE",
+  "description": "Construction and Demolition (C&D) Waste Management Digital Marketplace with Liquid Glass UI, recycled materials browsing, waste listing, quotation workflow, and mobile crusher booking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- NEXCORE Geometric Faceted 'N' Emblem inside 66dp safe zone (21..87) -->
+    <!-- Left upward ribbon (bright lime-emerald) -->
+    <path
+        android:fillColor="#34D399"
+        android:pathData="M24,80 L38,34 C40,28 46,26 51,31 L55,36 L44,62 L28,72 Z" />
+    <!-- Left lower shadow facet -->
+    <path
+        android:fillColor="#059669"
+        android:pathData="M24,80 L28,70 L44,60 L40,70 C38,74 32,77 24,80 Z" />
+    <!-- Bottom center triangle accent -->
+    <path
+        android:fillColor="#047857"
+        android:pathData="M32,80 L47,66 L55,78 C48,80 40,80 32,80 Z" />
+    <!-- Center diagonal bar -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M51,31 L67,56 L58,76 C56,75 54,73 52,70 L44,54 Z" />
+    <!-- Right upward wing -->
+    <path
+        android:fillColor="#22C55E"
+        android:pathData="M67,56 L84,36 L76,72 C74,78 66,81 58,76 Z" />
+    <!-- Center lower diamond facet -->
+    <path
+        android:fillColor="#059669"
+        android:pathData="M67,56 L76,72 C73,78 65,80 58,76 Z" />
+    <!-- Top right leaf wing -->
+    <path
+        android:fillColor="#4ADE80"
+        android:pathData="M56,30 C66,27 76,25 85,20 L78,36 C74,42 68,46 64,48 L60,36 Z" />
+    <!-- Top right leaf dark fold -->
+    <path
+        android:fillColor="#065F46"
+        android:pathData="M85,20 L79,36 C74,42 69,46 64,48 L66,40 Z" />
+</vector>

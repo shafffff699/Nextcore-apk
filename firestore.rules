@@ -1,0 +1,406 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Pillar 1: Global Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isNumber(val) {
+      return val is int || val is float;
+    }
+
+    // Bootstrapped Admin with mandatory email_verified check + /admins collection lookup
+    function isAdmin() {
+      return isSignedIn() && (
+        ('email' in request.auth.token &&
+         'email_verified' in request.auth.token &&
+         request.auth.token.email == 'ms5207663@gmail.com' &&
+         request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // =========================================================================
+    // 1. UserProfile (/users/{userId})
+    // =========================================================================
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+               'userId', 'fullName', 'companyName', 'email', 'phone',
+               'city', 'accountType', 'isVerified', 'savedListingIds',
+               'createdAt', 'updatedAt'
+             ]) &&
+             data.keys().hasOnly([
+               'userId', 'fullName', 'companyName', 'email', 'phone',
+               'city', 'accountType', 'isVerified', 'savedListingIds',
+               'createdAt', 'updatedAt'
+             ]) &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 100 &&
+             data.companyName is string && data.companyName.size() <= 120 &&
+             data.email is string && data.email.size() >= 3 && data.email.size() <= 150 &&
+             data.phone is string && data.phone.size() <= 40 &&
+             data.city is string && data.city.size() >= 2 && data.city.size() <= 100 &&
+             data.accountType in [
+               'Buyer / Customer',
+               'Demolition Contractor / Waste Seller',
+               'Recycling Service Provider',
+               'Administrator'
+             ] &&
+             data.isVerified is bool &&
+             data.savedListingIds is list && data.savedListingIds.size() <= 50 &&
+             (data.savedListingIds.size() == 0 || (data.savedListingIds[0] is string && data.savedListingIds[0].size() <= 128)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId} {
+      // PII Isolation: Only the profile owner or an admin can read user PII
+      allow get: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       request.auth.uid == userId &&
+                       incoming().userId == request.auth.uid &&
+                       (isAdmin() || (incoming().isVerified == false && incoming().accountType != 'Administrator'));
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt && (
+                         isAdmin() || (
+                           request.auth.uid == userId &&
+                           incoming().isVerified == existing().isVerified &&
+                           incoming().accountType != 'Administrator' &&
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'fullName', 'companyName', 'phone', 'city',
+                             'accountType', 'savedListingIds', 'updatedAt'
+                           ])
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+    }
+
+    // =========================================================================
+    // 2. MarketplaceListing (/listings/{listingId})
+    // =========================================================================
+    function isValidMarketplaceListing(data) {
+      return data.keys().hasAll([
+               'sellerId', 'sellerName', 'sellerRole', 'sellerVerified', 'listingType',
+               'title', 'category', 'description', 'conditionSpecs', 'quantityTonnes',
+               'pricePerTonne', 'unit', 'priceType', 'location', 'preferredCollectionDate',
+               'deliveryOptions', 'transportIncluded', 'contactPreference', 'status',
+               'visibility', 'isSample', 'imageKey', 'createdAt', 'updatedAt'
+             ]) &&
+             data.keys().hasOnly([
+               'sellerId', 'sellerName', 'sellerRole', 'sellerVerified', 'listingType',
+               'title', 'category', 'description', 'conditionSpecs', 'quantityTonnes',
+               'pricePerTonne', 'unit', 'priceType', 'location', 'preferredCollectionDate',
+               'deliveryOptions', 'transportIncluded', 'contactPreference', 'status',
+               'visibility', 'isSample', 'imageKey', 'createdAt', 'updatedAt'
+             ]) &&
+             data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128 &&
+             data.sellerName is string && data.sellerName.size() >= 2 && data.sellerName.size() <= 120 &&
+             data.sellerRole is string && data.sellerRole.size() <= 80 &&
+             data.sellerVerified is bool &&
+             data.listingType in ['MATERIAL', 'WASTE'] &&
+             data.title is string && data.title.size() >= 3 && data.title.size() <= 140 &&
+             data.category is string && data.category.size() >= 2 && data.category.size() <= 80 &&
+             data.description is string && data.description.size() >= 5 && data.description.size() <= 1500 &&
+             data.conditionSpecs is string && data.conditionSpecs.size() <= 600 &&
+             isNumber(data.quantityTonnes) && data.quantityTonnes > 0 && data.quantityTonnes <= 1000000 &&
+             isNumber(data.pricePerTonne) && data.pricePerTonne >= 0 && data.pricePerTonne <= 1000000 &&
+             data.unit is string && data.unit.size() >= 1 && data.unit.size() <= 40 &&
+             data.priceType in ['Fixed Price', 'Negotiable'] &&
+             data.location is string && data.location.size() >= 2 && data.location.size() <= 150 &&
+             data.preferredCollectionDate is string && data.preferredCollectionDate.size() <= 60 &&
+             data.deliveryOptions in ['Pickup Only', 'Delivery Available', 'Pickup or Delivery'] &&
+             data.transportIncluded is bool &&
+             data.contactPreference is string && data.contactPreference.size() <= 80 &&
+             data.status in ['Active', 'Paused', 'Pending Review', 'Removed'] &&
+             data.visibility in ['public', 'private'] &&
+             data.isSample is bool &&
+             data.imageKey is string && data.imageKey.size() <= 60 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /listings/{listingId} {
+      allow get: if isSignedIn() && isValidId(listingId) && (
+                   existing().visibility == 'public' ||
+                   existing().sellerId == request.auth.uid ||
+                   isAdmin()
+                 );
+
+      // Pillar 8: Query Enforcer — requires client filter on visibility == 'public' or sellerId == uid
+      allow list: if isSignedIn() && (
+                    existing().visibility == 'public' ||
+                    existing().sellerId == request.auth.uid ||
+                    isAdmin()
+                  );
+
+      allow create: if isSignedIn() &&
+                       isValidId(listingId) &&
+                       isValidMarketplaceListing(incoming()) &&
+                       incoming().sellerId == request.auth.uid &&
+                       (isAdmin() || incoming().sellerVerified == false);
+
+      allow update: if isSignedIn() &&
+                       isValidId(listingId) &&
+                       isValidMarketplaceListing(incoming()) &&
+                       incoming().sellerId == existing().sellerId &&
+                       incoming().createdAt == existing().createdAt && (
+                         isAdmin() || (
+                           existing().sellerId == request.auth.uid &&
+                           incoming().sellerVerified == existing().sellerVerified &&
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'title', 'category', 'description', 'conditionSpecs',
+                             'quantityTonnes', 'pricePerTonne', 'priceType', 'location',
+                             'preferredCollectionDate', 'deliveryOptions', 'transportIncluded',
+                             'contactPreference', 'status', 'visibility', 'imageKey', 'updatedAt'
+                           ])
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(listingId) && (existing().sellerId == request.auth.uid || isAdmin());
+    }
+
+    // =========================================================================
+    // 3. CrusherBooking (/crusher_bookings/{bookingId})
+    // =========================================================================
+    function isValidCrusherBooking(data) {
+      return data.keys().hasAll([
+               'userId', 'bookingRef', 'customerName', 'contactNumber', 'siteLocation',
+               'wasteType', 'estimatedTonnes', 'siteAccessInfo', 'preferredDate',
+               'serviceType', 'additionalNotes', 'status', 'quotedAmount',
+               'providerName', 'createdAt', 'updatedAt'
+             ]) &&
+             data.keys().hasOnly([
+               'userId', 'bookingRef', 'customerName', 'contactNumber', 'siteLocation',
+               'wasteType', 'estimatedTonnes', 'siteAccessInfo', 'preferredDate',
+               'serviceType', 'additionalNotes', 'status', 'quotedAmount',
+               'providerName', 'createdAt', 'updatedAt'
+             ]) &&
+             data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.bookingRef is string && data.bookingRef.size() >= 3 && data.bookingRef.size() <= 40 &&
+             data.customerName is string && data.customerName.size() >= 2 && data.customerName.size() <= 100 &&
+             data.contactNumber is string && data.contactNumber.size() >= 4 && data.contactNumber.size() <= 40 &&
+             data.siteLocation is string && data.siteLocation.size() >= 3 && data.siteLocation.size() <= 200 &&
+             data.wasteType is string && data.wasteType.size() >= 2 && data.wasteType.size() <= 80 &&
+             isNumber(data.estimatedTonnes) && data.estimatedTonnes > 0 && data.estimatedTonnes <= 1000000 &&
+             data.siteAccessInfo is string && data.siteAccessInfo.size() <= 500 &&
+             data.preferredDate is string && data.preferredDate.size() >= 2 && data.preferredDate.size() <= 60 &&
+             data.serviceType in ['Crushing', 'Screening', 'Both'] &&
+             data.additionalNotes is string && data.additionalNotes.size() <= 800 &&
+             data.status in [
+               'Request Submitted',
+               'Under Review',
+               'Quotation Sent',
+               'Accepted',
+               'Scheduled',
+               'In Progress',
+               'Completed',
+               'Cancelled'
+             ] &&
+             isNumber(data.quotedAmount) && data.quotedAmount >= 0 && data.quotedAmount <= 10000000 &&
+             data.providerName is string && data.providerName.size() <= 120 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /crusher_bookings/{bookingId} {
+      allow get: if isSignedIn() && isValidId(bookingId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(bookingId) &&
+                       isValidCrusherBooking(incoming()) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().status == 'Request Submitted';
+
+      allow update: if isSignedIn() &&
+                       isValidId(bookingId) &&
+                       isValidCrusherBooking(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().bookingRef == existing().bookingRef &&
+                       incoming().createdAt == existing().createdAt && (
+                         isAdmin() || (
+                           existing().userId == request.auth.uid &&
+                           !(existing().status in ['Completed', 'Cancelled']) &&
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'status', 'quotedAmount', 'providerName', 'additionalNotes', 'updatedAt'
+                           ])
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(bookingId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // =========================================================================
+    // 4. QuotationOrder (/quotations/{quotationId})
+    // =========================================================================
+    function isValidQuotationOrder(data) {
+      return data.keys().hasAll([
+               'orderRef', 'buyerId', 'buyerName', 'sellerId', 'sellerName',
+               'listingId', 'listingTitle', 'category', 'quantityTonnes', 'unitPrice',
+               'materialSubtotal', 'transportCost', 'processingFee', 'taxAmount',
+               'totalAmount', 'deliveryPreference', 'buyerMessage', 'sellerNotes',
+               'validityDays', 'orderStatus', 'paymentStatus', 'createdAt', 'updatedAt'
+             ]) &&
+             data.keys().hasOnly([
+               'orderRef', 'buyerId', 'buyerName', 'sellerId', 'sellerName',
+               'listingId', 'listingTitle', 'category', 'quantityTonnes', 'unitPrice',
+               'materialSubtotal', 'transportCost', 'processingFee', 'taxAmount',
+               'totalAmount', 'deliveryPreference', 'buyerMessage', 'sellerNotes',
+               'validityDays', 'orderStatus', 'paymentStatus', 'createdAt', 'updatedAt'
+             ]) &&
+             data.orderRef is string && data.orderRef.size() >= 3 && data.orderRef.size() <= 40 &&
+             data.buyerId is string && data.buyerId.size() >= 1 && data.buyerId.size() <= 128 &&
+             data.buyerName is string && data.buyerName.size() >= 2 && data.buyerName.size() <= 100 &&
+             data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128 &&
+             data.sellerName is string && data.sellerName.size() >= 2 && data.sellerName.size() <= 120 &&
+             data.listingId is string && data.listingId.size() >= 1 && data.listingId.size() <= 128 &&
+             data.listingTitle is string && data.listingTitle.size() >= 2 && data.listingTitle.size() <= 140 &&
+             data.category is string && data.category.size() >= 2 && data.category.size() <= 80 &&
+             isNumber(data.quantityTonnes) && data.quantityTonnes > 0 && data.quantityTonnes <= 1000000 &&
+             isNumber(data.unitPrice) && data.unitPrice >= 0 && data.unitPrice <= 1000000 &&
+             isNumber(data.materialSubtotal) && data.materialSubtotal >= 0 && data.materialSubtotal <= 100000000 &&
+             isNumber(data.transportCost) && data.transportCost >= 0 && data.transportCost <= 10000000 &&
+             isNumber(data.processingFee) && data.processingFee >= 0 && data.processingFee <= 10000000 &&
+             isNumber(data.taxAmount) && data.taxAmount >= 0 && data.taxAmount <= 10000000 &&
+             isNumber(data.totalAmount) && data.totalAmount >= 0 && data.totalAmount <= 100000000 &&
+             data.deliveryPreference is string && data.deliveryPreference.size() <= 80 &&
+             data.buyerMessage is string && data.buyerMessage.size() <= 600 &&
+             data.sellerNotes is string && data.sellerNotes.size() <= 600 &&
+             isNumber(data.validityDays) && data.validityDays >= 1 && data.validityDays <= 365 &&
+             data.orderStatus in [
+               'Pending',
+               'Quote Requested',
+               'Quote Received',
+               'Accepted',
+               'Processing',
+               'Ready for Collection',
+               'Dispatched',
+               'Delivered',
+               'Completed',
+               'Cancelled'
+             ] &&
+             data.paymentStatus is string && data.paymentStatus.size() <= 80 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /quotations/{quotationId} {
+      allow get: if isSignedIn() && isValidId(quotationId) && (
+                   existing().buyerId == request.auth.uid ||
+                   existing().sellerId == request.auth.uid ||
+                   isAdmin()
+                 );
+
+      allow list: if isSignedIn() && (
+                    existing().buyerId == request.auth.uid ||
+                    existing().sellerId == request.auth.uid ||
+                    isAdmin()
+                  );
+
+      allow create: if isSignedIn() &&
+                       isValidId(quotationId) &&
+                       isValidQuotationOrder(incoming()) &&
+                       incoming().buyerId == request.auth.uid;
+
+      allow update: if isSignedIn() &&
+                       isValidId(quotationId) &&
+                       isValidQuotationOrder(incoming()) &&
+                       incoming().buyerId == existing().buyerId &&
+                       incoming().sellerId == existing().sellerId &&
+                       incoming().listingId == existing().listingId &&
+                       incoming().orderRef == existing().orderRef &&
+                       incoming().createdAt == existing().createdAt && (
+                         isAdmin() || (
+                           !(existing().orderStatus in ['Completed', 'Cancelled']) && (
+                             // Action 1: Buyer accepts, cancels, or updates payment/status on their quote
+                             (existing().buyerId == request.auth.uid &&
+                              incoming().diff(existing()).affectedKeys().hasOnly([
+                                'orderStatus', 'paymentStatus', 'buyerMessage', 'updatedAt'
+                              ])) ||
+                             // Action 2: Seller submits quotation pricing or updates fulfillment status
+                             (existing().sellerId == request.auth.uid &&
+                              incoming().diff(existing()).affectedKeys().hasOnly([
+                                'unitPrice', 'materialSubtotal', 'transportCost', 'processingFee',
+                                'taxAmount', 'totalAmount', 'sellerNotes', 'validityDays',
+                                'orderStatus', 'paymentStatus', 'updatedAt'
+                              ]))
+                           )
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(quotationId) && (existing().buyerId == request.auth.uid || isAdmin());
+    }
+
+    // =========================================================================
+    // 5. TrustReport (/reports/{reportId})
+    // =========================================================================
+    function isValidTrustReport(data) {
+      return data.keys().hasAll([
+               'reporterId', 'targetType', 'targetId', 'targetTitle',
+               'reason', 'details', 'status', 'createdAt', 'updatedAt'
+             ]) &&
+             data.keys().hasOnly([
+               'reporterId', 'targetType', 'targetId', 'targetTitle',
+               'reason', 'details', 'status', 'createdAt', 'updatedAt'
+             ]) &&
+             data.reporterId is string && data.reporterId.size() >= 1 && data.reporterId.size() <= 128 &&
+             data.targetType in ['Listing', 'User'] &&
+             data.targetId is string && data.targetId.size() >= 1 && data.targetId.size() <= 128 &&
+             data.targetTitle is string && data.targetTitle.size() >= 1 && data.targetTitle.size() <= 140 &&
+             data.reason is string && data.reason.size() >= 2 && data.reason.size() <= 100 &&
+             data.details is string && data.details.size() <= 600 &&
+             data.status in ['Submitted', 'Reviewed', 'Resolved'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /reports/{reportId} {
+      allow get: if isSignedIn() && isValidId(reportId) && (existing().reporterId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().reporterId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(reportId) &&
+                       isValidTrustReport(incoming()) &&
+                       incoming().reporterId == request.auth.uid &&
+                       incoming().status == 'Submitted';
+
+      allow update: if isSignedIn() &&
+                       isValidId(reportId) &&
+                       isValidTrustReport(incoming()) &&
+                       incoming().reporterId == existing().reporterId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isAdmin();
+
+      allow delete: if isSignedIn() && isValidId(reportId) && isAdmin();
+    }
+  }
+}

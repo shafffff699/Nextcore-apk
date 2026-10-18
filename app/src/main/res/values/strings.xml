@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">NEXCORE</string>
+    <string name="app_tagline">Construction Waste. Renewed Value.</string>
+    <string name="hero_heading">Give Waste a Second Life.</string>
+    <string name="post_a_listing">Post a Listing</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+</resources>

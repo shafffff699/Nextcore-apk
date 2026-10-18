@@ -1,0 +1,252 @@
+package com.example.ui.theme
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+/**
+ * Specification tokens for the NEXCORE 'Liquid Glass' Material3 Theme Wrapper:
+ * - 28.dp rounded corners for surfaces
+ * - Backdrop blur radius (frosted glass effect)
+ * - Glassmorphism card background: rgba(255, 255, 255, 0.25)
+ * - Crisp white specular borders
+ * - Soft warm cream-green to cool blue-grey background gradient
+ */
+@Immutable
+data class LiquidGlassThemeSpec(
+  val surfaceCornerRadius: Dp = 28.dp,
+  val backdropBlurRadius: Dp = 28.dp,
+  val cardBackgroundColor: Color = GlassCardFill25, // rgba(255, 255, 255, 0.25)
+  val panelBackgroundColor: Color = GlassPanelFill,
+  val borderColor: Color = GlassBorderWhite,
+  val borderHighlightColor: Color = GlassInnerShine,
+  val borderWidth: Dp = 1.5.dp,
+  val gradientStartWarmCreamGreen: Color = BgWarmCreamGreen,
+  val gradientMidSageBlue: Color = BgSoftSageBlue,
+  val gradientEndCoolBlueGrey: Color = BgCoolBlueGrey,
+)
+
+val LocalLiquidGlassSpec = staticCompositionLocalOf { LiquidGlassThemeSpec() }
+
+private val LiquidGlassMaterialColorScheme = lightColorScheme(
+  primary = AccentBluePurple,               // NEXCORE Logo Emerald (#059669)
+  onPrimary = TextLight,
+  primaryContainer = Color(0xFFD1FAE5),     // Soft Warm Emerald Container
+  onPrimaryContainer = Color(0xFF064E3B),   // Deep Forest Green
+  secondary = NexcoreDeepNavy,              // Dark Industrial Navy (#0F172A)
+  onSecondary = TextLight,
+  secondaryContainer = BgCoolBlueGrey,      // Cool Blue-Grey Container
+  onSecondaryContainer = TextDark,
+  tertiary = NexcoreLimeFacet,              // Logo Bright Leaf Green (#22C55E)
+  onTertiary = TextLight,
+  background = BgWarmCreamGreen,            // Soft Warm Cream-Green base
+  onBackground = TextDark,                  // Dark Charcoal (#0F172A)
+  surface = GlassCardFill25,                // Glassmorphism rgba(255, 255, 255, 0.25)
+  onSurface = TextDark,
+  surfaceVariant = GlassPanelFill,          // Frosted Glass Panel Fill
+  onSurfaceVariant = TextSecondary,
+  outline = GlassBorderWhite,               // White Glass Border
+  outlineVariant = GlassInnerShine,         // Specular Top Highlight
+  error = DangerCoral,
+  onError = TextLight
+)
+
+/**
+ * Material3 Shapes with 28.dp rounded corners for surfaces and cards.
+ */
+val LiquidGlassShapes = Shapes(
+  extraSmall = RoundedCornerShape(14.dp),
+  small = RoundedCornerShape(20.dp),
+  medium = RoundedCornerShape(28.dp),       // 28.dp rounded corners for standard cards/surfaces
+  large = RoundedCornerShape(28.dp),        // 28.dp rounded corners for main glass panels
+  extraLarge = RoundedCornerShape(50)       // Full pill shape for buttons, inputs & chips
+)
+
+/**
+ * Reusable Modifier that applies the 'Liquid Glass' surface treatment:
+ * - 28.dp rounded corners (default)
+ * - Soft ambient drop shadow
+ * - Glassmorphism card background: rgba(255, 255, 255, 0.25) with subtle top-to-bottom frost sheen
+ * - Crisp 1.5.dp white border with specular top edge highlight
+ */
+fun Modifier.liquidGlassSurface(
+  cornerRadius: Dp = 28.dp,
+  backgroundColor: Color = GlassCardFill25,
+  borderBrush: Brush? = null,
+  shadowElevation: Dp = 12.dp,
+): Modifier {
+  val shape = RoundedCornerShape(cornerRadius)
+  val resolvedBorderBrush = borderBrush ?: Brush.verticalGradient(
+    colors = listOf(
+      GlassInnerShine,
+      GlassBorderWhite,
+      Color.White.copy(alpha = 0.45f)
+    )
+  )
+  val glassFillBrush = Brush.verticalGradient(
+    colors = listOf(
+      backgroundColor.copy(alpha = (backgroundColor.alpha + 0.08f).coerceAtMost(1f)),
+      backgroundColor,
+      backgroundColor.copy(alpha = (backgroundColor.alpha - 0.03f).coerceAtLeast(0.18f))
+    )
+  )
+  return this
+    .shadow(
+      elevation = shadowElevation,
+      shape = shape,
+      ambientColor = Color.Black.copy(alpha = 0.08f),
+      spotColor = AccentBluePurple.copy(alpha = 0.12f)
+    )
+    .clip(shape)
+    .background(brush = glassFillBrush, shape = shape)
+    .border(width = 1.5.dp, brush = resolvedBorderBrush, shape = shape)
+}
+
+/**
+ * Custom Material3 Theme Wrapper implementing the 'Liquid Glass' UI requirements:
+ * - 28.dp rounded corners for surfaces
+ * - Backdrop blur effects on the ambient glass canvas
+ * - Glassmorphism card backgrounds (rgba(255, 255, 255, 0.25) with white borders)
+ * - Soft warm cream-green to cool blue-grey background gradient
+ */
+@Composable
+fun LiquidGlassTheme(
+  spec: LiquidGlassThemeSpec = LiquidGlassThemeSpec(),
+  wrapWithLiquidBackdrop: Boolean = true,
+  content: @Composable () -> Unit,
+) {
+  CompositionLocalProvider(LocalLiquidGlassSpec provides spec) {
+    MaterialTheme(
+      colorScheme = LiquidGlassMaterialColorScheme,
+      typography = Typography,
+      shapes = LiquidGlassShapes
+    ) {
+      if (wrapWithLiquidBackdrop) {
+        LiquidGlassBackdropBox(spec = spec) {
+          content()
+        }
+      } else {
+        content()
+      }
+    }
+  }
+}
+
+/**
+ * Renders the soft warm cream-green to cool blue-grey gradient background with a blurred
+ * ambient light layer (`Modifier.blur`) so translucent rgba(255, 255, 255, 0.25) cards
+ * exhibit a true frosted backdrop blur effect.
+ */
+@Composable
+fun LiquidGlassBackdropBox(
+  modifier: Modifier = Modifier,
+  spec: LiquidGlassThemeSpec = LocalLiquidGlassSpec.current,
+  content: @Composable BoxScope.() -> Unit,
+) {
+  Box(modifier = modifier.fillMaxSize()) {
+    // Backdrop Layer: Soft warm cream-green to cool blue-grey gradient + blurred ambient orbs
+    Box(
+      modifier = Modifier
+        .fillMaxSize()
+        .blur(radius = spec.backdropBlurRadius)
+        .drawWithCache {
+          val baseGradient = Brush.linearGradient(
+            colors = listOf(
+              spec.gradientStartWarmCreamGreen,
+              spec.gradientMidSageBlue,
+              spec.gradientEndCoolBlueGrey
+            ),
+            start = Offset(0f, 0f),
+            end = Offset(size.width, size.height)
+          )
+          val creamGreenOrb = Brush.radialGradient(
+            colors = listOf(FeaturePink.copy(alpha = 0.50f), Color.Transparent),
+            center = Offset(size.width * 0.18f, size.height * 0.16f),
+            radius = (size.minDimension * 0.58f).coerceAtLeast(1f)
+          )
+          val coolBlueGreyOrb = Brush.radialGradient(
+            colors = listOf(FeatureSkyBlue.copy(alpha = 0.48f), Color.Transparent),
+            center = Offset(size.width * 0.84f, size.height * 0.28f),
+            radius = (size.minDimension * 0.54f).coerceAtLeast(1f)
+          )
+          val sageTealOrb = Brush.radialGradient(
+            colors = listOf(FeatureLavender.copy(alpha = 0.42f), Color.Transparent),
+            center = Offset(size.width * 0.48f, size.height * 0.78f),
+            radius = (size.minDimension * 0.62f).coerceAtLeast(1f)
+          )
+          val diagonalSurfacePath = Path().apply {
+            moveTo(0f, size.height * 0.36f)
+            lineTo(size.width, size.height * 0.14f)
+            lineTo(size.width, size.height)
+            lineTo(0f, size.height)
+            close()
+          }
+          val diagonalShadowBrush = Brush.linearGradient(
+            colors = listOf(Color.Black.copy(alpha = 0.03f), Color.Transparent),
+            start = Offset(0f, size.height * 0.2f),
+            end = Offset(size.width, size.height * 0.8f)
+          )
+
+          onDrawBehind {
+            drawRect(brush = baseGradient)
+            drawCircle(
+              brush = creamGreenOrb,
+              center = Offset(size.width * 0.18f, size.height * 0.16f),
+              radius = size.minDimension * 0.58f
+            )
+            drawCircle(
+              brush = coolBlueGreyOrb,
+              center = Offset(size.width * 0.84f, size.height * 0.28f),
+              radius = size.minDimension * 0.54f
+            )
+            drawCircle(
+              brush = sageTealOrb,
+              center = Offset(size.width * 0.48f, size.height * 0.78f),
+              radius = size.minDimension * 0.62f
+            )
+            drawPath(path = diagonalSurfacePath, brush = diagonalShadowBrush)
+          }
+        }
+    )
+
+    // Foreground Content Layer
+    content()
+  }
+}
+
+@Composable
+fun NexcoreTheme(
+  content: @Composable () -> Unit,
+) {
+  LiquidGlassTheme(content = content)
+}
+
+@Composable
+fun MyApplicationTheme(
+  darkTheme: Boolean = false,
+  dynamicColor: Boolean = false,
+  content: @Composable () -> Unit,
+) {
+  LiquidGlassTheme(content = content)
+}
