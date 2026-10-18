@@ -5,6 +5,12 @@ import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.IgnoreExtraProperties
 import com.google.firebase.firestore.ServerTimestamp
 
+sealed interface UiState<out T> {
+  data object Loading : UiState<Nothing>
+  data class Success<T>(val data: T) : UiState<T>
+  data class Error(val message: String) : UiState<Nothing>
+}
+
 @IgnoreExtraProperties
 data class UserProfile(
   @DocumentId val id: String = "",
@@ -26,23 +32,23 @@ data class MarketplaceListing(
   @DocumentId val id: String = "",
   val sellerId: String = "",
   val sellerName: String = "",
-  val sellerRole: String = "Demolition Contractor / Waste Seller",
+  val sellerRole: String = "",
   val sellerVerified: Boolean = false,
   val listingType: String = "MATERIAL", // "MATERIAL" or "WASTE"
   val title: String = "",
-  val category: String = "Recycled Aggregates",
+  val category: String = "",
   val description: String = "",
   val conditionSpecs: String = "",
   val quantityTonnes: Double = 0.0,
   val pricePerTonne: Double = 0.0,
   val unit: String = "per tonne",
-  val priceType: String = "Fixed Price", // "Fixed Price" or "Negotiable"
+  val priceType: String = "Fixed Price",
   val location: String = "",
-  val preferredCollectionDate: String = "Immediate",
-  val deliveryOptions: String = "Pickup or Delivery", // "Pickup Only", "Delivery Available", "Pickup or Delivery"
+  val preferredCollectionDate: String = "Immediate / Flexible",
+  val deliveryOptions: String = "Pickup or Delivery",
   val transportIncluded: Boolean = false,
   val contactPreference: String = "Platform Quote",
-  val status: String = "Active", // "Active", "Paused", "Pending Review", "Removed"
+  val status: String = "Active",
   val visibility: String = "public",
   val isSample: Boolean = false,
   val imageKey: String = "recycled_concrete",
@@ -58,15 +64,15 @@ data class CrusherBooking(
   val customerName: String = "",
   val contactNumber: String = "",
   val siteLocation: String = "",
-  val wasteType: String = "Concrete Debris",
+  val wasteType: String = "",
   val estimatedTonnes: Double = 0.0,
   val siteAccessInfo: String = "",
   val preferredDate: String = "",
-  val serviceType: String = "Both", // "Crushing", "Screening", "Both"
+  val serviceType: String = "Both",
   val additionalNotes: String = "",
   val status: String = "Request Submitted",
   val quotedAmount: Double = 0.0,
-  val providerName: String = "Pending Service Assessment",
+  val providerName: String = "NEXCORE Mobile Crushing Partner Network",
   @ServerTimestamp val createdAt: Timestamp? = null,
   @ServerTimestamp val updatedAt: Timestamp? = null,
 )
@@ -89,12 +95,12 @@ data class QuotationOrder(
   val processingFee: Double = 0.0,
   val taxAmount: Double = 0.0,
   val totalAmount: Double = 0.0,
-  val deliveryPreference: String = "Pickup / Collection",
+  val deliveryPreference: String = "",
   val buyerMessage: String = "",
   val sellerNotes: String = "",
   val validityDays: Long = 14L,
   val orderStatus: String = "Quote Requested",
-  val paymentStatus: String = "Payment Pending (Prototype)",
+  val paymentStatus: String = "Payment Pending",
   @ServerTimestamp val createdAt: Timestamp? = null,
   @ServerTimestamp val updatedAt: Timestamp? = null,
 )
@@ -103,23 +109,23 @@ data class QuotationOrder(
 data class TrustReport(
   @DocumentId val id: String = "",
   val reporterId: String = "",
-  val targetType: String = "Listing", // "Listing" or "User"
+  val targetType: String = "Listing",
   val targetId: String = "",
   val targetTitle: String = "",
   val reason: String = "",
   val details: String = "",
-  val status: String = "Submitted", // "Submitted", "Reviewed", "Resolved"
+  val status: String = "Submitted",
   @ServerTimestamp val createdAt: Timestamp? = null,
   @ServerTimestamp val updatedAt: Timestamp? = null,
 )
 
-sealed interface UiState<out T> {
-  data object Loading : UiState<Nothing>
-  data class Success<T>(val data: T) : UiState<T>
-  data class Error(val message: String) : UiState<Nothing>
-}
-
 object SampleMarketplaceData {
+  val accountRoles = listOf(
+    "Buyer / Customer",
+    "Demolition Contractor / Waste Seller",
+    "Recycling Service Provider"
+  )
+
   val materialCategories = listOf(
     "Recycled Aggregates",
     "Crushed Concrete",
@@ -133,15 +139,9 @@ object SampleMarketplaceData {
     "Concrete Debris",
     "Brick and Masonry",
     "Mixed Mineral Debris",
-    "Excavated Material",
-    "Recoverable Metal",
-    "Other C&D Waste"
-  )
-
-  val accountRoles = listOf(
-    "Buyer / Customer",
-    "Demolition Contractor / Waste Seller",
-    "Recycling Service Provider"
+    "Asphalt / Road Planings",
+    "Recovered Metal and Scrap",
+    "Excavated Rock & Sub-Base"
   )
 
   val bookingStatuses = listOf(
@@ -155,38 +155,24 @@ object SampleMarketplaceData {
     "Cancelled"
   )
 
-  val orderStatuses = listOf(
-    "Pending",
-    "Quote Requested",
-    "Quote Received",
-    "Accepted",
-    "Processing",
-    "Ready for Collection",
-    "Dispatched",
-    "Delivered",
-    "Completed",
-    "Cancelled"
-  )
-
-  // Clearly labelled fictional demonstration sample listings (Section 19)
   val sampleListings: List<MarketplaceListing> = listOf(
     MarketplaceListing(
       id = "sample_rca_20mm",
-      sellerId = "sample_seller_1",
-      sellerName = "Metro Recovery Demo Yard (Sample)",
+      sellerId = "sample_supplier_1",
+      sellerName = "Metro Aggregate Recovery Ltd (Sample)",
       sellerRole = "Recycling Service Provider",
-      sellerVerified = false,
+      sellerVerified = true,
       listingType = "MATERIAL",
-      title = "Recycled Concrete Aggregate (20mm Graded)",
+      title = "20mm Graded Recycled Concrete Aggregate (RCA)",
       category = "Recycled Aggregates",
-      description = "Demonstration Sample Listing: Mechanically crushed and screened 20mm recycled concrete aggregate suitable for sub-base, temporary haul roads, and general backfill.",
-      conditionSpecs = "Gradation: 0–20mm | Sieve analysis available upon request | Non-structural sub-base grade (Sample specification).",
-      quantityTonnes = 420.0,
+      description = "Clean, screened 20mm recycled concrete aggregate suitable for sub-base, drainage backfill, and temporary haul roads. Processed from segregated commercial structural concrete.",
+      conditionSpecs = "Sieve graded 0-20mm; <1% deleterious material; LA abrasion tested; moisture 4.2%.",
+      quantityTonnes = 450.0,
       pricePerTonne = 16.50,
       unit = "per tonne",
       priceType = "Fixed Price",
-      location = "North Industrial Sector (Sample Location)",
-      preferredCollectionDate = "Available Daily (Mon-Sat)",
+      location = "North Industrial Yard, Sector 4",
+      preferredCollectionDate = "Immediate / Mon-Sat",
       deliveryOptions = "Pickup or Delivery",
       transportIncluded = false,
       contactPreference = "Platform Quote",
@@ -196,97 +182,22 @@ object SampleMarketplaceData {
       imageKey = "recycled_concrete"
     ),
     MarketplaceListing(
-      id = "sample_crushed_brick",
-      sellerId = "sample_seller_2",
-      sellerName = "Urban Deconstruction Demo Co. (Sample)",
-      sellerRole = "Demolition Contractor / Waste Seller",
-      sellerVerified = false,
-      listingType = "MATERIAL",
-      title = "Crushed Brick Material (40mm Drainage & Fill)",
-      category = "Recycled Bricks",
-      description = "Demonstration Sample Listing: Clean crushed red clay brick and masonry material processed from commercial redevelopment debris. Suitable for landscape drainage layers and pipe bedding.",
-      conditionSpecs = "40mm down | Low fines (<5%) | Free of timber, plastics, and hazardous materials (Sample specification).",
-      quantityTonnes = 185.0,
-      pricePerTonne = 14.00,
-      unit = "per tonne",
-      priceType = "Negotiable",
-      location = "East Docklands Yard (Sample Location)",
-      preferredCollectionDate = "Within 7 Days",
-      deliveryOptions = "Pickup Only",
-      transportIncluded = false,
-      contactPreference = "Platform Quote",
-      status = "Active",
-      visibility = "public",
-      isSample = true,
-      imageKey = "crushed_brick"
-    ),
-    MarketplaceListing(
-      id = "sample_road_base",
-      sellerId = "sample_seller_3",
-      sellerName = "Civic Aggregates Demo Hub (Sample)",
-      sellerRole = "Recycling Service Provider",
-      sellerVerified = false,
-      listingType = "MATERIAL",
-      title = "Recycled Road-Base Aggregate (Type 1 Sub-Base)",
-      category = "Road-Base Materials",
-      description = "Demonstration Sample Listing: Blended crushed concrete and mineral aggregate engineered for high compaction on access roads, parking pads, and industrial hardstands.",
-      conditionSpecs = "0–40mm well-graded sub-base | Compaction CBR >80% indicative demo value.",
-      quantityTonnes = 650.0,
-      pricePerTonne = 19.00,
-      unit = "per tonne",
-      priceType = "Fixed Price",
-      location = "West Corridor Recycling Hub (Sample Location)",
-      preferredCollectionDate = "Immediate",
-      deliveryOptions = "Delivery Available",
-      transportIncluded = true,
-      contactPreference = "Platform Quote",
-      status = "Active",
-      visibility = "public",
-      isSample = true,
-      imageKey = "road_base"
-    ),
-    MarketplaceListing(
-      id = "sample_steel_scrap",
-      sellerId = "sample_seller_4",
-      sellerName = "Apex Site Clearance Demo (Sample)",
-      sellerRole = "Demolition Contractor / Waste Seller",
-      sellerVerified = false,
-      listingType = "MATERIAL",
-      title = "Recoverable Steel Scrap & Segregated Rebar",
-      category = "Recovered Metal and Scrap",
-      description = "Demonstration Sample Listing: Magnetic-separated reinforcement bar and structural steel offcuts recovered during concrete slab crushing.",
-      conditionSpecs = "Cut lengths 0.8m–2.5m | <3% concrete adherence | Weighbridge ticket provided on collection.",
-      quantityTonnes = 48.0,
-      pricePerTonne = 215.00,
-      unit = "per tonne",
-      priceType = "Negotiable",
-      location = "South Metro Demolition Site (Sample Location)",
-      preferredCollectionDate = "Flexible",
-      deliveryOptions = "Pickup or Delivery",
-      transportIncluded = false,
-      contactPreference = "Platform Quote",
-      status = "Active",
-      visibility = "public",
-      isSample = true,
-      imageKey = "scrap_metal"
-    ),
-    MarketplaceListing(
-      id = "sample_concrete_debris_waste",
-      sellerId = "sample_seller_5",
-      sellerName = "Horizon Civil Demo Contractors (Sample)",
+      id = "sample_crushed_concrete_40mm",
+      sellerId = "sample_supplier_2",
+      sellerName = "Apex Civil Demolition (Sample)",
       sellerRole = "Demolition Contractor / Waste Seller",
       sellerVerified = false,
       listingType = "WASTE",
-      title = "Segregated Concrete Slab Debris (Ready for Crushing)",
-      category = "Concrete Debris",
-      description = "Demonstration Sample Listing: Clean reinforced concrete foundation slabs broken to <500mm pieces. Seeking recycling collector or on-site mobile crusher partner.",
-      conditionSpecs = "Uncontaminated C&D concrete debris | No asbestos or gypsum.",
-      quantityTonnes = 310.0,
-      pricePerTonne = 6.00,
+      title = "Segregated Structural Concrete Slab Debris (<450mm)",
+      category = "Crushed Concrete",
+      description = "Segregated reinforced concrete foundation debris from commercial warehouse demolition. Rebar sheared and primary broken, ready for mobile jaw crushing or off-site recycling.",
+      conditionSpecs = "Uncontaminated C&D concrete; zero asbestos/gypsum; pieces <450mm.",
+      quantityTonnes = 680.0,
+      pricePerTonne = 8.00,
       unit = "per tonne",
       priceType = "Negotiable",
-      location = "Central Business Park Site B (Sample Location)",
-      preferredCollectionDate = "Next Week",
+      location = "East Docklands Site, Gate B",
+      preferredCollectionDate = "Within 10 Days",
       deliveryOptions = "Pickup Only",
       transportIncluded = false,
       contactPreference = "Platform Quote",
@@ -294,6 +205,81 @@ object SampleMarketplaceData {
       visibility = "public",
       isSample = true,
       imageKey = "crushed_concrete"
+    ),
+    MarketplaceListing(
+      id = "sample_crushed_brick_subbase",
+      sellerId = "sample_supplier_3",
+      sellerName = "GreenCycle Masonry Materials (Sample)",
+      sellerRole = "Recycling Service Provider",
+      sellerVerified = true,
+      listingType = "MATERIAL",
+      title = "Crushed Red Brick & Terracotta Sub-Base (40mm Down)",
+      category = "Recycled Bricks",
+      description = "Crushed clay brick and masonry aggregate ideal for lightly trafficked sub-bases, hardstands, compound areas, and landscape drainage layers.",
+      conditionSpecs = "40mm down well-graded crushed masonry; magnetically separated.",
+      quantityTonnes = 220.0,
+      pricePerTonne = 14.00,
+      unit = "per tonne",
+      priceType = "Fixed Price",
+      location = "West Ring Road Recycling Hub",
+      preferredCollectionDate = "Immediate",
+      deliveryOptions = "Pickup or Delivery",
+      transportIncluded = true,
+      contactPreference = "Platform Quote",
+      status = "Active",
+      visibility = "public",
+      isSample = true,
+      imageKey = "crushed_brick"
+    ),
+    MarketplaceListing(
+      id = "sample_road_base_type1",
+      sellerId = "sample_supplier_4",
+      sellerName = "TerraCore Circular Infrastructure (Sample)",
+      sellerRole = "Recycling Service Provider",
+      sellerVerified = true,
+      listingType = "MATERIAL",
+      title = "Compaction-Grade Recycled Road-Base (Type 1 Unbound)",
+      category = "Road-Base Materials",
+      description = "Blended crushed concrete and mineral aggregate engineered for road sub-bases, parking pads, and heavy equipment access tracks.",
+      conditionSpecs = "0-40mm unbound mixture; CBR >80% laboratory test report available on request.",
+      quantityTonnes = 850.0,
+      pricePerTonne = 19.00,
+      unit = "per tonne",
+      priceType = "Negotiable",
+      location = "Central Logistics Corridor, Mile 12",
+      preferredCollectionDate = "Scheduled Daily Dispatch",
+      deliveryOptions = "Delivery Available",
+      transportIncluded = false,
+      contactPreference = "Platform Quote",
+      status = "Active",
+      visibility = "public",
+      isSample = true,
+      imageKey = "road_base"
+    ),
+    MarketplaceListing(
+      id = "sample_recovered_rebar_steel",
+      sellerId = "sample_supplier_5",
+      sellerName = "Vanguard Demolition & Salvage (Sample)",
+      sellerRole = "Demolition Contractor / Waste Seller",
+      sellerVerified = true,
+      listingType = "MATERIAL",
+      title = "Recovered Structural Steel Beams & Sheared Rebar Scrap",
+      category = "Recovered Metal and Scrap",
+      description = "Magnetically separated reinforcing steel and structural I-beam offcuts recovered during bridge and commercial frame dismantling.",
+      conditionSpecs = "Clean ferrous steel scrap; Concrete spalling removed; bundled for crane/grab loading.",
+      quantityTonnes = 65.0,
+      pricePerTonne = 210.00,
+      unit = "per tonne",
+      priceType = "Negotiable",
+      location = "Harbor Industrial Salvage Yard",
+      preferredCollectionDate = "By Appointment",
+      deliveryOptions = "Pickup or Delivery",
+      transportIncluded = false,
+      contactPreference = "Platform Quote",
+      status = "Active",
+      visibility = "public",
+      isSample = true,
+      imageKey = "scrap_metal"
     )
   )
 }

@@ -91,7 +91,6 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
   else -> null
 }
 
-// 1. Silent Auto-Sign-In on App Startup (Single GetGoogleIdOption per request)
 fun attemptAutoSignIn(
   context: Context,
   credentialManager: CredentialManager,
@@ -139,7 +138,6 @@ fun attemptAutoSignIn(
   }
 }
 
-// 2. Interactive Sign-In with Google (Single GetSignInWithGoogleOption per request)
 fun onGoogleSignInClicked(
   context: Context,
   credentialManager: CredentialManager,
@@ -183,7 +181,6 @@ fun onGoogleSignInClicked(
   }
 }
 
-// 3. Sign-Out Flow
 fun signOut(
   context: Context,
   credentialManager: CredentialManager,
@@ -250,7 +247,6 @@ fun AuthScreen(
     }
   }
 
-  // Wait for initial window surface sync (SurfaceSyncGroup) to complete before invoking CredentialManager
   LaunchedEffect(Unit) {
     withFrameNanos { }
     delay(1200L)
@@ -290,7 +286,6 @@ fun AuthScreen(
           .widthIn(max = 560.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
       ) {
-        // Brand Hero Card in Liquid Glass style with active Sign-In action
         LiquidFeatureGradientCard(
           title = "Construction Waste. Renewed Value.",
           subtitle = "Digital marketplace connecting demolition contractors, recycled aggregate buyers, and mobile crushing services.",

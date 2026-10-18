@@ -15,8 +15,6 @@ val InterFontFamily = FontFamily(
   Font(R.font.inter, FontWeight.Bold),
 )
 
-// Liquid Glass Typography:
-// Title: 24sp bold. Card titles: 18sp semi-bold. Button and body text: 14-16sp medium. Subtitle: 13sp regular grey.
 val Typography = Typography(
   headlineLarge = TextStyle(
     fontFamily = InterFontFamily,

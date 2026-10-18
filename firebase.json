@@ -3,19 +3,10 @@
     {
       "database": "ai-studio-android-nexcore-b7ab4a5c-f086-4e8c-9ec1-4a3545ff56f9",
       "rules": "firestore.rules"
-    }
-  ],
-  "emulators": {
-    "firestore": {
-      "host": "127.0.0.1",
-      "port": 8085
     },
-    "auth": {
-      "host": "127.0.0.1",
-      "port": 9099
-    },
-    "ui": {
-      "enabled": false
+    {
+      "database": "(default)",
+      "rules": "firestore.rules"
     }
-  }
+  ]
 }

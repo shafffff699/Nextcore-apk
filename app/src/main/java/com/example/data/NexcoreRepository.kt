@@ -1,84 +1,163 @@
 package com.example.data
 
-import android.content.Context
-import com.example.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreException
-import com.google.firebase.firestore.snapshots
-import java.util.UUID
-import kotlin.coroutines.cancellation.CancellationException
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
-
-private fun Throwable.unwrapFirestoreException(): FirebaseFirestoreException? {
-  var current: Throwable? = this
-  while (current != null) {
-    if (current is FirebaseFirestoreException) return current
-    current = current.cause
-  }
-  return null
-}
+import java.util.UUID
 
 class NexcoreRepository(
   private val db: FirebaseFirestore,
   private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
 ) {
-  // CRITICAL: Always initialize with R.string.firestore_database_id
-  constructor(context: Context) : this(
-    FirebaseFirestore.getInstance(
-      context.applicationContext.getString(R.string.firestore_database_id)
-    ),
-    FirebaseAuth.getInstance()
-  )
 
-  private fun requireUserId(): String {
-    return auth.currentUser?.uid
-      ?: throw IllegalStateException("User must be signed in with Google before accessing Firestore.")
+  private fun DocumentSnapshot.toUserProfileModel(): UserProfile? {
+    if (!exists()) return null
+    val savedRaw = get("savedListingIds") as? List<*>
+    val savedList = savedRaw?.mapNotNull { it as? String } ?: emptyList()
+    return UserProfile(
+      id = id,
+      userId = getString("userId") ?: id,
+      fullName = getString("fullName") ?: "",
+      companyName = getString("companyName") ?: "",
+      email = getString("email") ?: "",
+      phone = getString("phone") ?: "",
+      city = getString("city") ?: "",
+      accountType = getString("accountType") ?: "Buyer / Customer",
+      isVerified = getBoolean("isVerified") ?: false,
+      savedListingIds = savedList,
+      createdAt = getTimestamp("createdAt"),
+      updatedAt = getTimestamp("updatedAt")
+    )
   }
 
-  // ===========================================================================
-  // 1. User Profile Operations (/users/{userId})
-  // ===========================================================================
-  fun observeUserProfile(userId: String): Flow<UserProfile?> =
-    db.collection("users")
-      .document(userId)
-      .snapshots()
-      .map { snapshot ->
-        if (snapshot.exists()) {
-          snapshot.toObject(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-        } else {
-          null
+  private fun DocumentSnapshot.toListingModel(): MarketplaceListing? {
+    if (!exists()) return null
+    return MarketplaceListing(
+      id = id,
+      sellerId = getString("sellerId") ?: "",
+      sellerName = getString("sellerName") ?: "",
+      sellerRole = getString("sellerRole") ?: "",
+      sellerVerified = getBoolean("sellerVerified") ?: false,
+      listingType = getString("listingType") ?: "MATERIAL",
+      title = getString("title") ?: "",
+      category = getString("category") ?: "",
+      description = getString("description") ?: "",
+      conditionSpecs = getString("conditionSpecs") ?: "",
+      quantityTonnes = getDouble("quantityTonnes") ?: 0.0,
+      pricePerTonne = getDouble("pricePerTonne") ?: 0.0,
+      unit = getString("unit") ?: "per tonne",
+      priceType = getString("priceType") ?: "Fixed Price",
+      location = getString("location") ?: "",
+      preferredCollectionDate = getString("preferredCollectionDate") ?: "Immediate / Flexible",
+      deliveryOptions = getString("deliveryOptions") ?: "Pickup or Delivery",
+      transportIncluded = getBoolean("transportIncluded") ?: false,
+      contactPreference = getString("contactPreference") ?: "Platform Quote",
+      status = getString("status") ?: "Active",
+      visibility = getString("visibility") ?: "public",
+      isSample = getBoolean("isSample") ?: false,
+      imageKey = getString("imageKey") ?: "recycled_concrete",
+      createdAt = getTimestamp("createdAt"),
+      updatedAt = getTimestamp("updatedAt")
+    )
+  }
+
+  private fun DocumentSnapshot.toCrusherBookingModel(): CrusherBooking? {
+    if (!exists()) return null
+    return CrusherBooking(
+      id = id,
+      userId = getString("userId") ?: "",
+      bookingRef = getString("bookingRef") ?: "",
+      customerName = getString("customerName") ?: "",
+      contactNumber = getString("contactNumber") ?: "",
+      siteLocation = getString("siteLocation") ?: "",
+      wasteType = getString("wasteType") ?: "",
+      estimatedTonnes = getDouble("estimatedTonnes") ?: 0.0,
+      siteAccessInfo = getString("siteAccessInfo") ?: "",
+      preferredDate = getString("preferredDate") ?: "",
+      serviceType = getString("serviceType") ?: "Both",
+      additionalNotes = getString("additionalNotes") ?: "",
+      status = getString("status") ?: "Request Submitted",
+      quotedAmount = getDouble("quotedAmount") ?: 0.0,
+      providerName = getString("providerName") ?: "NEXCORE Mobile Crushing Partner Network",
+      createdAt = getTimestamp("createdAt"),
+      updatedAt = getTimestamp("updatedAt")
+    )
+  }
+
+  private fun DocumentSnapshot.toQuotationOrderModel(): QuotationOrder? {
+    if (!exists()) return null
+    return QuotationOrder(
+      id = id,
+      orderRef = getString("orderRef") ?: "",
+      buyerId = getString("buyerId") ?: "",
+      buyerName = getString("buyerName") ?: "",
+      sellerId = getString("sellerId") ?: "",
+      sellerName = getString("sellerName") ?: "",
+      listingId = getString("listingId") ?: "",
+      listingTitle = getString("listingTitle") ?: "",
+      category = getString("category") ?: "",
+      quantityTonnes = getDouble("quantityTonnes") ?: 0.0,
+      unitPrice = getDouble("unitPrice") ?: 0.0,
+      materialSubtotal = getDouble("materialSubtotal") ?: 0.0,
+      transportCost = getDouble("transportCost") ?: 0.0,
+      processingFee = getDouble("processingFee") ?: 0.0,
+      taxAmount = getDouble("taxAmount") ?: 0.0,
+      totalAmount = getDouble("totalAmount") ?: 0.0,
+      deliveryPreference = getString("deliveryPreference") ?: "",
+      buyerMessage = getString("buyerMessage") ?: "",
+      sellerNotes = getString("sellerNotes") ?: "",
+      validityDays = getLong("validityDays") ?: 14L,
+      orderStatus = getString("orderStatus") ?: "Quote Requested",
+      paymentStatus = getString("paymentStatus") ?: "Payment Pending",
+      createdAt = getTimestamp("createdAt"),
+      updatedAt = getTimestamp("updatedAt")
+    )
+  }
+
+  private fun DocumentSnapshot.toTrustReportModel(): TrustReport? {
+    if (!exists()) return null
+    return TrustReport(
+      id = id,
+      reporterId = getString("reporterId") ?: "",
+      targetType = getString("targetType") ?: "Listing",
+      targetId = getString("targetId") ?: "",
+      targetTitle = getString("targetTitle") ?: "",
+      reason = getString("reason") ?: "",
+      details = getString("details") ?: "",
+      status = getString("status") ?: "Submitted",
+      createdAt = getTimestamp("createdAt"),
+      updatedAt = getTimestamp("updatedAt")
+    )
+  }
+
+  // 1. User Profile Operations
+  fun observeUserProfile(userId: String): Flow<UserProfile?> = callbackFlow {
+    val registration = db.collection("users").document(userId)
+      .addSnapshotListener { snapshot, error ->
+        if (error != null) {
+          val wrapped = runCatching {
+            handleFirestoreError(error, OperationType.GET, "users/$userId", auth)
+          }.exceptionOrNull() ?: error
+          close(wrapped)
+          return@addSnapshotListener
         }
+        trySend(snapshot?.toUserProfileModel())
       }
-      .catch { error ->
-        val fsEx = error.unwrapFirestoreException()
-        if (fsEx != null) {
-          handleFirestoreError(fsEx, OperationType.GET, "users/$userId")
-          throw fsEx
-        }
-        if (error is Exception) handleFirestoreError(error, OperationType.GET, "users/$userId")
-        throw error
-      }
+    awaitClose { registration.remove() }
+  }
 
   suspend fun getUserProfile(userId: String): Result<UserProfile?> = runCatching {
-    val path = "users/$userId"
     try {
       val doc = db.collection("users").document(userId).get().await()
-      if (doc.exists()) {
-        doc.toObject(UserProfile::class.java, DocumentSnapshot.ServerTimestampBehavior.ESTIMATE)
-      } else {
-        null
-      }
-    } catch (e: CancellationException) {
-      throw e
+      doc.toUserProfileModel()
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.GET, path)
-      throw e
+      handleFirestoreError(e, OperationType.GET, "users/$userId", auth)
     }
   }
 
@@ -89,43 +168,60 @@ class NexcoreRepository(
     phone: String,
     city: String,
     accountType: String,
-    existingProfile: UserProfile? = null,
-  ): Result<Unit> = runCatching {
-    val uid = requireUserId()
+    existingProfile: UserProfile?,
+  ): Result<UserProfile> = runCatching {
+    val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
+    val safeName = fullName.trim().ifBlank { "NEXCORE Member" }.take(100)
+    val safeCity = city.trim().ifBlank { "Metro Hub" }.take(100)
+    val safeEmail = email.trim().ifBlank { "member@nexcore.app" }.take(150)
+    val safeRole = if (accountType in SampleMarketplaceData.accountRoles) {
+      accountType
+    } else {
+      "Buyer / Customer"
+    }
+
     val docRef = db.collection("users").document(uid)
     try {
-      val roleSafe = if (accountType == "Administrator") "Buyer / Customer" else accountType
-      if (existingProfile == null || existingProfile.createdAt == null) {
-        val payload = mapOf(
+      if (existingProfile == null) {
+        val createPayload = mapOf(
           "userId" to uid,
-          "fullName" to fullName.trim().take(100).ifEmpty { "NEXCORE Member" },
+          "fullName" to safeName,
           "companyName" to companyName.trim().take(120),
-          "email" to email.trim().take(150).ifEmpty { "user@nexcore.app" },
+          "email" to safeEmail,
           "phone" to phone.trim().take(40),
-          "city" to city.trim().take(100).ifEmpty { "Metro Area" },
-          "accountType" to roleSafe,
+          "city" to safeCity,
+          "accountType" to safeRole,
           "isVerified" to false,
           "savedListingIds" to emptyList<String>(),
           "createdAt" to FieldValue.serverTimestamp(),
-          "updatedAt" to FieldValue.serverTimestamp(),
+          "updatedAt" to FieldValue.serverTimestamp()
         )
-        docRef.set(payload).await()
+        docRef.set(createPayload).await()
       } else {
-        val updates = mapOf(
-          "fullName" to fullName.trim().take(100).ifEmpty { existingProfile.fullName },
+        val updatePayload = mapOf(
+          "fullName" to safeName,
           "companyName" to companyName.trim().take(120),
           "phone" to phone.trim().take(40),
-          "city" to city.trim().take(100).ifEmpty { existingProfile.city },
-          "accountType" to roleSafe,
-          "updatedAt" to FieldValue.serverTimestamp(),
+          "city" to safeCity,
+          "accountType" to safeRole,
+          "updatedAt" to FieldValue.serverTimestamp()
         )
-        docRef.update(updates).await()
+        docRef.set(updatePayload, SetOptions.merge()).await()
       }
-    } catch (e: CancellationException) {
-      throw e
+      docRef.get().await().toUserProfileModel()
+        ?: UserProfile(
+          id = uid,
+          userId = uid,
+          fullName = safeName,
+          companyName = companyName.trim(),
+          email = safeEmail,
+          phone = phone.trim(),
+          city = safeCity,
+          accountType = safeRole
+        )
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.WRITE, docRef.path)
-      throw e
+      val op = if (existingProfile == null) OperationType.CREATE else OperationType.UPDATE
+      handleFirestoreError(e, op, "users/$uid", auth)
     }
   }
 
@@ -133,87 +229,61 @@ class NexcoreRepository(
     listingId: String,
     currentSavedIds: List<String>,
   ): Result<List<String>> = runCatching {
-    val uid = requireUserId()
-    val docRef = db.collection("users").document(uid)
-    val updatedList =
-      if (currentSavedIds.contains(listingId)) {
-        currentSavedIds - listingId
-      } else {
-        (currentSavedIds + listingId).distinct().take(50)
-      }
+    val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
+    val updated = if (currentSavedIds.contains(listingId)) {
+      currentSavedIds - listingId
+    } else {
+      (currentSavedIds + listingId).distinct().take(50)
+    }
     try {
-      docRef.update(
+      db.collection("users").document(uid).set(
         mapOf(
-          "savedListingIds" to updatedList,
-          "updatedAt" to FieldValue.serverTimestamp(),
-        )
+          "savedListingIds" to updated,
+          "updatedAt" to FieldValue.serverTimestamp()
+        ),
+        SetOptions.merge()
       ).await()
-      updatedList
-    } catch (e: CancellationException) {
-      throw e
+      updated
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.UPDATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.UPDATE, "users/$uid", auth)
     }
   }
 
-  // ===========================================================================
-  // 2. Marketplace Listings (/listings/{listingId})
-  // ===========================================================================
-  fun observePublicListings(): Flow<List<MarketplaceListing>> =
-    db.collection("listings")
+  // 2. Marketplace Listings Operations
+  fun observePublicListings(): Flow<List<MarketplaceListing>> = callbackFlow {
+    val registration = db.collection("listings")
       .whereEqualTo("visibility", "public")
-      .snapshots()
-      .map { snapshot ->
-        snapshot.toObjects(
-          MarketplaceListing::class.java,
-          DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
-        )
-      }
-      .catch { error ->
-        val fsEx = error.unwrapFirestoreException()
-        if (fsEx != null) {
-          handleFirestoreError(fsEx, OperationType.LIST, "listings")
-          throw fsEx
+      .limit(50)
+      .addSnapshotListener { snapshot, error ->
+        if (error != null) {
+          val wrapped = runCatching {
+            handleFirestoreError(error, OperationType.LIST, "listings", auth)
+          }.exceptionOrNull() ?: error
+          close(wrapped)
+          return@addSnapshotListener
         }
-        if (error is Exception) handleFirestoreError(error, OperationType.LIST, "listings")
-        throw error
+        val items = snapshot?.documents?.mapNotNull { it.toListingModel() } ?: emptyList()
+        trySend(items)
       }
+    awaitClose { registration.remove() }
+  }
 
-  fun observeSellerListings(sellerId: String): Flow<List<MarketplaceListing>> =
-    db.collection("listings")
+  fun observeSellerListings(sellerId: String): Flow<List<MarketplaceListing>> = callbackFlow {
+    val registration = db.collection("listings")
       .whereEqualTo("sellerId", sellerId)
-      .snapshots()
-      .map { snapshot ->
-        snapshot.toObjects(
-          MarketplaceListing::class.java,
-          DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
-        )
-      }
-      .catch { error ->
-        val fsEx = error.unwrapFirestoreException()
-        if (fsEx != null) {
-          handleFirestoreError(fsEx, OperationType.LIST, "listings")
-          throw fsEx
+      .limit(50)
+      .addSnapshotListener { snapshot, error ->
+        if (error != null) {
+          val wrapped = runCatching {
+            handleFirestoreError(error, OperationType.LIST, "listings", auth)
+          }.exceptionOrNull() ?: error
+          close(wrapped)
+          return@addSnapshotListener
         }
-        if (error is Exception) handleFirestoreError(error, OperationType.LIST, "listings")
-        throw error
+        val items = snapshot?.documents?.mapNotNull { it.toListingModel() } ?: emptyList()
+        trySend(items)
       }
-
-  suspend fun getListingById(listingId: String): Result<MarketplaceListing> = runCatching {
-    val docRef = db.collection("listings").document(listingId)
-    try {
-      val snapshot = docRef.get().await()
-      snapshot.toObject(
-        MarketplaceListing::class.java,
-        DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
-      ) ?: throw IllegalStateException("Listing not found")
-    } catch (e: CancellationException) {
-      throw e
-    } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.GET, docRef.path)
-      throw e
-    }
+    awaitClose { registration.remove() }
   }
 
   suspend fun createListing(
@@ -226,7 +296,6 @@ class NexcoreRepository(
     conditionSpecs: String,
     quantityTonnes: Double,
     pricePerTonne: Double,
-    unit: String = "per tonne",
     priceType: String,
     location: String,
     preferredCollectionDate: String,
@@ -234,118 +303,91 @@ class NexcoreRepository(
     transportIncluded: Boolean,
     contactPreference: String,
     imageKey: String,
-  ): Result<String> = runCatching {
-    val uid = requireUserId()
-    val docId = "lst_${UUID.randomUUID().toString().replace("-", "").take(16)}"
-    val docRef = db.collection("listings").document(docId)
+  ): Result<MarketplaceListing> = runCatching {
+    val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
+    val listingId = "lst_${UUID.randomUUID().toString().replace("-", "").take(16)}"
+    val docRef = db.collection("listings").document(listingId)
+
     val payload = mapOf(
       "sellerId" to uid,
-      "sellerName" to sellerName.trim().take(120).ifEmpty { "NEXCORE Seller" },
+      "sellerName" to sellerName.trim().ifBlank { "NEXCORE Seller" }.take(120),
       "sellerRole" to sellerRole.trim().take(80),
       "sellerVerified" to false,
-      "listingType" to if (listingType in listOf("MATERIAL", "WASTE")) listingType else "WASTE",
+      "listingType" to if (listingType == "WASTE") "WASTE" else "MATERIAL",
       "title" to title.trim().take(140),
       "category" to category.trim().take(80),
       "description" to description.trim().take(1500),
       "conditionSpecs" to conditionSpecs.trim().take(600),
       "quantityTonnes" to quantityTonnes.coerceIn(0.1, 1000000.0),
       "pricePerTonne" to pricePerTonne.coerceIn(0.0, 1000000.0),
-      "unit" to unit.trim().take(40).ifEmpty { "per tonne" },
-      "priceType" to if (priceType in listOf("Fixed Price", "Negotiable")) priceType else "Negotiable",
+      "unit" to "per tonne",
+      "priceType" to if (priceType == "Negotiable") "Negotiable" else "Fixed Price",
       "location" to location.trim().take(150),
-      "preferredCollectionDate" to preferredCollectionDate.trim().take(60).ifEmpty { "Flexible" },
-      "deliveryOptions" to if (deliveryOptions in listOf("Pickup Only", "Delivery Available", "Pickup or Delivery")) deliveryOptions else "Pickup or Delivery",
+      "preferredCollectionDate" to preferredCollectionDate.trim().ifBlank { "Flexible" }.take(60),
+      "deliveryOptions" to if (deliveryOptions in listOf("Pickup Only", "Delivery Available", "Pickup or Delivery")) {
+        deliveryOptions
+      } else {
+        "Pickup or Delivery"
+      },
       "transportIncluded" to transportIncluded,
-      "contactPreference" to contactPreference.trim().take(80).ifEmpty { "Platform Quote" },
+      "contactPreference" to contactPreference.trim().ifBlank { "Platform Quote" }.take(80),
       "status" to "Active",
       "visibility" to "public",
       "isSample" to false,
-      "imageKey" to imageKey.trim().take(60).ifEmpty { "recycled_concrete" },
+      "imageKey" to imageKey.trim().ifBlank { "recycled_concrete" }.take(60),
       "createdAt" to FieldValue.serverTimestamp(),
-      "updatedAt" to FieldValue.serverTimestamp(),
+      "updatedAt" to FieldValue.serverTimestamp()
     )
+
     try {
       docRef.set(payload).await()
-      docId
-    } catch (e: CancellationException) {
-      throw e
+      docRef.get().await().toListingModel() ?: throw IllegalStateException("Listing not found after creation")
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.CREATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.CREATE, "listings/$listingId", auth)
     }
   }
 
-  suspend fun updateListingStatus(
-    listingId: String,
-    newStatus: String,
-  ): Result<Unit> = runCatching {
-    requireUserId()
-    val docRef = db.collection("listings").document(listingId)
+  suspend fun updateListingStatus(listingId: String, newStatus: String): Result<Unit> = runCatching {
+    val allowed = listOf("Active", "Paused", "Pending Review", "Removed")
+    val safeStatus = if (newStatus in allowed) newStatus else "Active"
     try {
-      docRef.update(
+      db.collection("listings").document(listingId).set(
         mapOf(
-          "status" to newStatus,
-          "updatedAt" to FieldValue.serverTimestamp(),
-        )
+          "status" to safeStatus,
+          "updatedAt" to FieldValue.serverTimestamp()
+        ),
+        SetOptions.merge()
       ).await()
-    } catch (e: CancellationException) {
-      throw e
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.UPDATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.UPDATE, "listings/$listingId", auth)
     }
   }
 
   suspend fun deleteListing(listingId: String): Result<Unit> = runCatching {
-    requireUserId()
-    val docRef = db.collection("listings").document(listingId)
     try {
-      docRef.delete().await()
-    } catch (e: CancellationException) {
-      throw e
+      db.collection("listings").document(listingId).delete().await()
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.DELETE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.DELETE, "listings/$listingId", auth)
     }
   }
 
-  // ===========================================================================
-  // 3. Mobile Crusher Bookings (/crusher_bookings/{bookingId})
-  // ===========================================================================
-  fun observeUserCrusherBookings(userId: String): Flow<List<CrusherBooking>> =
-    db.collection("crusher_bookings")
+  // 3. Mobile Crusher Bookings Operations
+  fun observeUserCrusherBookings(userId: String): Flow<List<CrusherBooking>> = callbackFlow {
+    val registration = db.collection("crusher_bookings")
       .whereEqualTo("userId", userId)
-      .snapshots()
-      .map { snapshot ->
-        snapshot.toObjects(
-          CrusherBooking::class.java,
-          DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
-        )
-      }
-      .catch { error ->
-        val fsEx = error.unwrapFirestoreException()
-        if (fsEx != null) {
-          handleFirestoreError(fsEx, OperationType.LIST, "crusher_bookings")
-          throw fsEx
+      .limit(50)
+      .addSnapshotListener { snapshot, error ->
+        if (error != null) {
+          val wrapped = runCatching {
+            handleFirestoreError(error, OperationType.LIST, "crusher_bookings", auth)
+          }.exceptionOrNull() ?: error
+          close(wrapped)
+          return@addSnapshotListener
         }
-        if (error is Exception) handleFirestoreError(error, OperationType.LIST, "crusher_bookings")
-        throw error
+        val items = snapshot?.documents?.mapNotNull { it.toCrusherBookingModel() } ?: emptyList()
+        trySend(items)
       }
-
-  suspend fun getCrusherBookingById(bookingId: String): Result<CrusherBooking> = runCatching {
-    val docRef = db.collection("crusher_bookings").document(bookingId)
-    try {
-      val snapshot = docRef.get().await()
-      snapshot.toObject(
-        CrusherBooking::class.java,
-        DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
-      ) ?: throw IllegalStateException("Booking not found")
-    } catch (e: CancellationException) {
-      throw e
-    } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.GET, docRef.path)
-      throw e
-    }
+    awaitClose { registration.remove() }
   }
 
   suspend fun createCrusherBooking(
@@ -359,10 +401,12 @@ class NexcoreRepository(
     serviceType: String,
     additionalNotes: String,
   ): Result<CrusherBooking> = runCatching {
-    val uid = requireUserId()
-    val docId = "crb_${UUID.randomUUID().toString().replace("-", "").take(16)}"
-    val bookingRef = "NXC-CR-${(1000..9999).random()}"
-    val docRef = db.collection("crusher_bookings").document(docId)
+    val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
+    val shortCode = UUID.randomUUID().toString().uppercase().replace("-", "").take(6)
+    val bookingId = "crb_${shortCode.lowercase()}"
+    val bookingRef = "CRB-$shortCode"
+    val docRef = db.collection("crusher_bookings").document(bookingId)
+
     val payload = mapOf(
       "userId" to uid,
       "bookingRef" to bookingRef,
@@ -377,34 +421,17 @@ class NexcoreRepository(
       "additionalNotes" to additionalNotes.trim().take(800),
       "status" to "Request Submitted",
       "quotedAmount" to 0.0,
-      "providerName" to "Pending Service Assessment",
+      "providerName" to "NEXCORE Mobile Crushing Partner Network",
       "createdAt" to FieldValue.serverTimestamp(),
-      "updatedAt" to FieldValue.serverTimestamp(),
+      "updatedAt" to FieldValue.serverTimestamp()
     )
+
     try {
       docRef.set(payload).await()
-      CrusherBooking(
-        id = docId,
-        userId = uid,
-        bookingRef = bookingRef,
-        customerName = customerName.trim(),
-        contactNumber = contactNumber.trim(),
-        siteLocation = siteLocation.trim(),
-        wasteType = wasteType.trim(),
-        estimatedTonnes = estimatedTonnes,
-        siteAccessInfo = siteAccessInfo.trim(),
-        preferredDate = preferredDate.trim(),
-        serviceType = serviceType,
-        additionalNotes = additionalNotes.trim(),
-        status = "Request Submitted",
-        quotedAmount = 0.0,
-        providerName = "Pending Service Assessment",
-      )
-    } catch (e: CancellationException) {
-      throw e
+      docRef.get().await().toCrusherBookingModel()
+        ?: throw IllegalStateException("Booking not found after creation")
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.CREATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.CREATE, "crusher_bookings/$bookingId", auth)
     }
   }
 
@@ -414,66 +441,61 @@ class NexcoreRepository(
     quotedAmount: Double? = null,
     providerName: String? = null,
   ): Result<Unit> = runCatching {
-    requireUserId()
-    val docRef = db.collection("crusher_bookings").document(bookingId)
     val updates = mutableMapOf<String, Any>(
       "status" to newStatus,
-      "updatedAt" to FieldValue.serverTimestamp(),
+      "updatedAt" to FieldValue.serverTimestamp()
     )
-    if (quotedAmount != null) updates["quotedAmount"] = quotedAmount
-    if (providerName != null) updates["providerName"] = providerName.take(120)
+    if (quotedAmount != null) {
+      updates["quotedAmount"] = quotedAmount.coerceAtLeast(0.0)
+    }
+    if (!providerName.isNullOrBlank()) {
+      updates["providerName"] = providerName.trim().take(120)
+    }
     try {
-      docRef.update(updates).await()
-    } catch (e: CancellationException) {
-      throw e
+      db.collection("crusher_bookings").document(bookingId)
+        .set(updates, SetOptions.merge())
+        .await()
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.UPDATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.UPDATE, "crusher_bookings/$bookingId", auth)
     }
   }
 
-  // ===========================================================================
-  // 4. Quotations & Orders (/quotations/{quotationId})
-  // ===========================================================================
-  fun observeBuyerQuotations(buyerId: String): Flow<List<QuotationOrder>> =
-    db.collection("quotations")
+  // 4. Quotations & Orders Operations
+  fun observeBuyerQuotations(buyerId: String): Flow<List<QuotationOrder>> = callbackFlow {
+    val registration = db.collection("quotations")
       .whereEqualTo("buyerId", buyerId)
-      .snapshots()
-      .map { snapshot ->
-        snapshot.toObjects(
-          QuotationOrder::class.java,
-          DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
-        )
-      }
-      .catch { error ->
-        val fsEx = error.unwrapFirestoreException()
-        if (fsEx != null) {
-          handleFirestoreError(fsEx, OperationType.LIST, "quotations")
-          throw fsEx
+      .limit(50)
+      .addSnapshotListener { snapshot, error ->
+        if (error != null) {
+          val wrapped = runCatching {
+            handleFirestoreError(error, OperationType.LIST, "quotations", auth)
+          }.exceptionOrNull() ?: error
+          close(wrapped)
+          return@addSnapshotListener
         }
-        if (error is Exception) handleFirestoreError(error, OperationType.LIST, "quotations")
-        throw error
+        val items = snapshot?.documents?.mapNotNull { it.toQuotationOrderModel() } ?: emptyList()
+        trySend(items)
       }
+    awaitClose { registration.remove() }
+  }
 
-  fun observeSellerQuotations(sellerId: String): Flow<List<QuotationOrder>> =
-    db.collection("quotations")
+  fun observeSellerQuotations(sellerId: String): Flow<List<QuotationOrder>> = callbackFlow {
+    val registration = db.collection("quotations")
       .whereEqualTo("sellerId", sellerId)
-      .snapshots()
-      .map { snapshot ->
-        snapshot.toObjects(
-          QuotationOrder::class.java,
-          DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
-        )
-      }
-      .catch { error ->
-        val fsEx = error.unwrapFirestoreException()
-        if (fsEx != null) {
-          handleFirestoreError(fsEx, OperationType.LIST, "quotations")
-          throw fsEx
+      .limit(50)
+      .addSnapshotListener { snapshot, error ->
+        if (error != null) {
+          val wrapped = runCatching {
+            handleFirestoreError(error, OperationType.LIST, "quotations", auth)
+          }.exceptionOrNull() ?: error
+          close(wrapped)
+          return@addSnapshotListener
         }
-        if (error is Exception) handleFirestoreError(error, OperationType.LIST, "quotations")
-        throw error
+        val items = snapshot?.documents?.mapNotNull { it.toQuotationOrderModel() } ?: emptyList()
+        trySend(items)
       }
+    awaitClose { registration.remove() }
+  }
 
   suspend fun createQuotationRequest(
     buyerName: String,
@@ -481,51 +503,57 @@ class NexcoreRepository(
     quantityTonnes: Double,
     deliveryPreference: String,
     buyerMessage: String,
-  ): Result<String> = runCatching {
-    val uid = requireUserId()
-    val docId = "quo_${UUID.randomUUID().toString().replace("-", "").take(16)}"
-    val orderRef = "NXC-QT-${(1000..9999).random()}"
-    val docRef = db.collection("quotations").document(docId)
-    val unitPrice = listing.pricePerTonne
-    val materialSubtotal = (quantityTonnes * unitPrice)
-    val transportCost = if (listing.transportIncluded || deliveryPreference == "Pickup / Collection") 0.0 else (quantityTonnes * 3.5).coerceAtLeast(65.0)
+  ): Result<QuotationOrder> = runCatching {
+    val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
+    val shortCode = UUID.randomUUID().toString().uppercase().replace("-", "").take(6)
+    val quotationId = "qto_${shortCode.lowercase()}"
+    val orderRef = "NXQ-$shortCode"
+
+    val qty = quantityTonnes.coerceIn(1.0, 1000000.0)
+    val unitPrice = listing.pricePerTonne.coerceAtLeast(0.0)
+    val materialSubtotal = qty * unitPrice
+    val transportCost = if (listing.transportIncluded || deliveryPreference.contains("Pickup", ignoreCase = true)) {
+      0.0
+    } else {
+      (qty * 3.5).coerceAtLeast(65.0)
+    }
     val processingFee = 25.0
-    val taxAmount = ((materialSubtotal + transportCost + processingFee) * 0.08)
+    val taxAmount = (materialSubtotal + transportCost + processingFee) * 0.08
     val totalAmount = materialSubtotal + transportCost + processingFee + taxAmount
 
+    val docRef = db.collection("quotations").document(quotationId)
     val payload = mapOf(
       "orderRef" to orderRef,
       "buyerId" to uid,
-      "buyerName" to buyerName.trim().take(100).ifEmpty { "NEXCORE Buyer" },
-      "sellerId" to listing.sellerId,
+      "buyerName" to buyerName.trim().ifBlank { "NEXCORE Buyer" }.take(100),
+      "sellerId" to listing.sellerId.ifBlank { uid },
       "sellerName" to listing.sellerName.take(120),
       "listingId" to listing.id,
       "listingTitle" to listing.title.take(140),
       "category" to listing.category.take(80),
-      "quantityTonnes" to quantityTonnes.coerceIn(0.5, 1000000.0),
+      "quantityTonnes" to qty,
       "unitPrice" to unitPrice,
       "materialSubtotal" to materialSubtotal,
       "transportCost" to transportCost,
       "processingFee" to processingFee,
       "taxAmount" to taxAmount,
       "totalAmount" to totalAmount,
-      "deliveryPreference" to deliveryPreference.take(80),
+      "deliveryPreference" to deliveryPreference.trim().take(80),
       "buyerMessage" to buyerMessage.trim().take(600),
-      "sellerNotes" to "Indicative quotation calculation based on listing rate.",
+      "sellerNotes" to "Awaiting formal supplier review & confirmation.",
       "validityDays" to 14L,
       "orderStatus" to "Quote Requested",
-      "paymentStatus" to "Payment Pending (Prototype)",
+      "paymentStatus" to "Payment Pending",
       "createdAt" to FieldValue.serverTimestamp(),
-      "updatedAt" to FieldValue.serverTimestamp(),
+      "updatedAt" to FieldValue.serverTimestamp()
     )
+
     try {
       docRef.set(payload).await()
-      docId
-    } catch (e: CancellationException) {
-      throw e
+      docRef.get().await().toQuotationOrderModel()
+        ?: throw IllegalStateException("Quotation not found after creation")
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.CREATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.CREATE, "quotations/$quotationId", auth)
     }
   }
 
@@ -538,30 +566,32 @@ class NexcoreRepository(
     validityDays: Long,
     sellerNotes: String,
   ): Result<Unit> = runCatching {
-    requireUserId()
-    val docRef = db.collection("quotations").document(quotationId)
-    val materialSubtotal = quantityTonnes * offeredUnitPrice
-    val taxAmount = (materialSubtotal + transportCost + processingFee) * 0.08
-    val totalAmount = materialSubtotal + transportCost + processingFee + taxAmount
+    val qty = quantityTonnes.coerceAtLeast(1.0)
+    val unitPrice = offeredUnitPrice.coerceAtLeast(0.0)
+    val materialSubtotal = qty * unitPrice
+    val safeTransport = transportCost.coerceAtLeast(0.0)
+    val safeProcessing = processingFee.coerceAtLeast(0.0)
+    val taxAmount = (materialSubtotal + safeTransport + safeProcessing) * 0.08
+    val totalAmount = materialSubtotal + safeTransport + safeProcessing + taxAmount
+
     val updates = mapOf(
-      "unitPrice" to offeredUnitPrice.coerceAtLeast(0.0),
-      "materialSubtotal" to materialSubtotal.coerceAtLeast(0.0),
-      "transportCost" to transportCost.coerceAtLeast(0.0),
-      "processingFee" to processingFee.coerceAtLeast(0.0),
-      "taxAmount" to taxAmount.coerceAtLeast(0.0),
-      "totalAmount" to totalAmount.coerceAtLeast(0.0),
+      "unitPrice" to unitPrice,
+      "materialSubtotal" to materialSubtotal,
+      "transportCost" to safeTransport,
+      "processingFee" to safeProcessing,
+      "taxAmount" to taxAmount,
+      "totalAmount" to totalAmount,
       "validityDays" to validityDays.coerceIn(1L, 365L),
       "sellerNotes" to sellerNotes.trim().take(600),
       "orderStatus" to "Quote Received",
-      "updatedAt" to FieldValue.serverTimestamp(),
+      "updatedAt" to FieldValue.serverTimestamp()
     )
     try {
-      docRef.update(updates).await()
-    } catch (e: CancellationException) {
-      throw e
+      db.collection("quotations").document(quotationId)
+        .set(updates, SetOptions.merge())
+        .await()
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.UPDATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.UPDATE, "quotations/$quotationId", auth)
     }
   }
 
@@ -570,47 +600,40 @@ class NexcoreRepository(
     newStatus: String,
     paymentStatus: String? = null,
   ): Result<Unit> = runCatching {
-    requireUserId()
-    val docRef = db.collection("quotations").document(quotationId)
     val updates = mutableMapOf<String, Any>(
       "orderStatus" to newStatus,
-      "updatedAt" to FieldValue.serverTimestamp(),
+      "updatedAt" to FieldValue.serverTimestamp()
     )
-    if (paymentStatus != null) {
-      updates["paymentStatus"] = paymentStatus.take(80)
+    if (!paymentStatus.isNullOrBlank()) {
+      updates["paymentStatus"] = paymentStatus.trim().take(80)
     }
     try {
-      docRef.update(updates).await()
-    } catch (e: CancellationException) {
-      throw e
+      db.collection("quotations").document(quotationId)
+        .set(updates, SetOptions.merge())
+        .await()
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.UPDATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.UPDATE, "quotations/$quotationId", auth)
     }
   }
 
-  // ===========================================================================
-  // 5. Trust & Safety Reports (/reports/{reportId})
-  // ===========================================================================
-  fun observeUserReports(reporterId: String): Flow<List<TrustReport>> =
-    db.collection("reports")
+  // 5. Trust & Safety Reports Operations
+  fun observeUserReports(reporterId: String): Flow<List<TrustReport>> = callbackFlow {
+    val registration = db.collection("reports")
       .whereEqualTo("reporterId", reporterId)
-      .snapshots()
-      .map { snapshot ->
-        snapshot.toObjects(
-          TrustReport::class.java,
-          DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
-        )
-      }
-      .catch { error ->
-        val fsEx = error.unwrapFirestoreException()
-        if (fsEx != null) {
-          handleFirestoreError(fsEx, OperationType.LIST, "reports")
-          throw fsEx
+      .limit(50)
+      .addSnapshotListener { snapshot, error ->
+        if (error != null) {
+          val wrapped = runCatching {
+            handleFirestoreError(error, OperationType.LIST, "reports", auth)
+          }.exceptionOrNull() ?: error
+          close(wrapped)
+          return@addSnapshotListener
         }
-        if (error is Exception) handleFirestoreError(error, OperationType.LIST, "reports")
-        throw error
+        val items = snapshot?.documents?.mapNotNull { it.toTrustReportModel() } ?: emptyList()
+        trySend(items)
       }
+    awaitClose { registration.remove() }
+  }
 
   suspend fun submitTrustReport(
     targetType: String,
@@ -618,29 +641,28 @@ class NexcoreRepository(
     targetTitle: String,
     reason: String,
     details: String,
-  ): Result<String> = runCatching {
-    val uid = requireUserId()
-    val docId = "rep_${UUID.randomUUID().toString().replace("-", "").take(16)}"
-    val docRef = db.collection("reports").document(docId)
+  ): Result<TrustReport> = runCatching {
+    val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
+    val reportId = "rep_${UUID.randomUUID().toString().replace("-", "").take(14)}"
+    val docRef = db.collection("reports").document(reportId)
+
     val payload = mapOf(
       "reporterId" to uid,
-      "targetType" to if (targetType in listOf("Listing", "User")) targetType else "Listing",
-      "targetId" to targetId.trim().take(128).ifEmpty { "unknown" },
-      "targetTitle" to targetTitle.trim().take(140).ifEmpty { "Reported Item" },
-      "reason" to reason.trim().take(100).ifEmpty { "Policy Concern" },
+      "targetType" to if (targetType == "User") "User" else "Listing",
+      "targetId" to targetId.trim().take(128),
+      "targetTitle" to targetTitle.trim().ifBlank { "Marketplace Item" }.take(140),
+      "reason" to reason.trim().ifBlank { "Policy Review" }.take(100),
       "details" to details.trim().take(600),
       "status" to "Submitted",
       "createdAt" to FieldValue.serverTimestamp(),
-      "updatedAt" to FieldValue.serverTimestamp(),
+      "updatedAt" to FieldValue.serverTimestamp()
     )
     try {
       docRef.set(payload).await()
-      docId
-    } catch (e: CancellationException) {
-      throw e
+      docRef.get().await().toTrustReportModel()
+        ?: throw IllegalStateException("Report not found after creation")
     } catch (e: Exception) {
-      handleFirestoreError(e, OperationType.CREATE, docRef.path)
-      throw e
+      handleFirestoreError(e, OperationType.CREATE, "reports/$reportId", auth)
     }
   }
 }

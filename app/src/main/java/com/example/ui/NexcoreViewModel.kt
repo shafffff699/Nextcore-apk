@@ -35,13 +35,13 @@ enum class NexcoreDestination(val title: String) {
 data class MarketplaceFilterState(
   val searchQuery: String = "",
   val selectedCategory: String = "All",
-  val listingTypeFilter: String = "ALL", // "ALL", "MATERIAL", "WASTE"
+  val listingTypeFilter: String = "ALL",
   val deliveryFilter: String = "All",
   val priceTypeFilter: String = "All",
   val maxPricePerTonne: Float = 500f,
   val minQuantityTonnes: Float = 0f,
   val locationQuery: String = "",
-  val sortBy: String = "Recently Listed", // "Recently Listed", "Lowest Price", "Highest Price", "Highest Quantity"
+  val sortBy: String = "Recently Listed",
 )
 
 class NexcoreViewModel(
@@ -64,7 +64,6 @@ class NexcoreViewModel(
   private val _isSubmitting = MutableStateFlow(false)
   val isSubmitting: StateFlow<Boolean> = _isSubmitting.asStateFlow()
 
-  // Two-Tier Kotlin Flow Error Handling Architecture
   val userProfileState: StateFlow<UiState<UserProfile?>> =
     repository.observeUserProfile(currentUserId)
       .map<UserProfile?, UiState<UserProfile?>> { UiState.Success(it) }
@@ -93,7 +92,6 @@ class NexcoreViewModel(
         initialValue = UiState.Loading
       )
 
-  // Combined live Firestore listings + clearly labeled demonstration sample listings
   val combinedListings: StateFlow<List<MarketplaceListing>> =
     combine(firestoreListingsState, _filterState) { state, filters ->
       val liveItems = (state as? UiState.Success)?.data ?: emptyList()

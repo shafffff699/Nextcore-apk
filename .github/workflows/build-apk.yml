@@ -1,0 +1,72 @@
+name: Build & Release NEXCORE APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Setup Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      - name: Decode debug keystore
+        run: |
+          if [ ! -f debug.keystore ] && [ -f debug.keystore.base64 ]; then
+            base64 -d debug.keystore.base64 > debug.keystore
+          fi
+
+      - name: Ensure .env exists
+        run: |
+          if [ ! -f .env ] && [ -f .env.example ]; then
+            cp .env.example .env
+          fi
+
+      - name: Build Debug APK
+        run: gradle :app:assembleDebug --no-daemon
+
+      - name: Prepare named APK
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk NEXCORE-debug.apk
+
+      - name: Upload NEXCORE APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEXCORE-debug-apk
+          path: NEXCORE-debug.apk
+
+      - name: Publish APK to GitHub Releases
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: "NEXCORE Android APK (Build #${{ github.run_number }})"
+          body: |
+            ### NEXCORE — C&D Waste Management Digital Marketplace (Android APK)
+            Download **`NEXCORE-debug.apk`** below and install it on your Android device.
+          files: NEXCORE-debug.apk
+          prerelease: false
+          make_latest: true

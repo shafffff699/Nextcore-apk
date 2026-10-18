@@ -1,6 +1,5 @@
 package com.example.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,26 +32,20 @@ import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Recycling
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -65,29 +57,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.ui.theme.AccentBluePurple
-import com.example.ui.theme.BgCoolBlueGrey
-import com.example.ui.theme.BgSoftLavenderGrey
-import com.example.ui.theme.BgWarmCreamPink
 import com.example.ui.theme.DangerCoral
 import com.example.ui.theme.FeatureCardGradientBrush
 import com.example.ui.theme.FeatureCyan
-import com.example.ui.theme.FeatureLavender
 import com.example.ui.theme.FeaturePink
-import com.example.ui.theme.FeatureSkyBlue
-import com.example.ui.theme.GlassBorderWhite
-import com.example.ui.theme.GlassCardFill25
-import com.example.ui.theme.GlassInnerShine
-import com.example.ui.theme.GlassPanelFill
-import com.example.ui.theme.GlassWhiteFill
 import com.example.ui.theme.IridescentBorderBrush
 import com.example.ui.theme.LiquidGlassBackdropBox
 import com.example.ui.theme.LocalLiquidGlassSpec
-import com.example.ui.theme.NexcoreEmerald
 import com.example.ui.theme.PrimaryPurpleBrush
-import com.example.ui.theme.PrimaryPurpleEnd
 import com.example.ui.theme.PrimaryPurpleStart
 import com.example.ui.theme.SecondaryTealBrush
-import com.example.ui.theme.SecondaryTealEnd
 import com.example.ui.theme.SecondaryTealStart
 import com.example.ui.theme.SolidSoftWhite
 import com.example.ui.theme.SuccessGreen
@@ -99,11 +78,6 @@ import com.example.ui.theme.TopRightGlassCardBrush
 import com.example.ui.theme.WarningAmber
 import com.example.ui.theme.liquidGlassSurface
 
-/**
- * 0. Liquid Glass Background Canvas
- * Soft gradient from warm cream-green (top-left) to cool blue-grey (top-right and bottom),
- * with a blurred ambient light backdrop and subtle diagonal surface shadow.
- */
 @Composable
 fun LiquidGlassBackground(
   modifier: Modifier = Modifier,
@@ -115,12 +89,6 @@ fun LiquidGlassBackground(
   )
 }
 
-/**
- * MAIN GLASS PANEL
- * Big frosted glass container, 28.dp rounded corners, rgba(255, 255, 255, 0.25) glassmorphism fill,
- * 1.5.dp white border with thin top highlight, soft shadow underneath,
- * and window chrome header.
- */
 @Composable
 fun MainGlassPanel(
   title: String,
@@ -134,8 +102,8 @@ fun MainGlassPanel(
     modifier = modifier
       .fillMaxWidth()
       .liquidGlassSurface(
-        cornerRadius = glassSpec.surfaceCornerRadius, // 28.dp rounded corners
-        backgroundColor = glassSpec.cardBackgroundColor, // rgba(255, 255, 255, 0.25)
+        cornerRadius = glassSpec.surfaceCornerRadius,
+        backgroundColor = glassSpec.cardBackgroundColor,
         shadowElevation = 14.dp
       )
       .padding(18.dp)
@@ -190,11 +158,6 @@ fun MainGlassPanel(
   }
 }
 
-/**
- * Frosted Glass Card (reusable liquid glass surface for items, forms, and panels)
- * Default 28.dp rounded corners, rgba(255, 255, 255, 0.25) glassmorphism card background,
- * and crisp white border.
- */
 @Composable
 fun LiquidGlassCard(
   modifier: Modifier = Modifier,
@@ -222,7 +185,7 @@ fun LiquidGlassCard(
     Brush.verticalGradient(
       colors = listOf(
         glassSpec.cardBackgroundColor.copy(alpha = 0.32f),
-        glassSpec.cardBackgroundColor, // rgba(255, 255, 255, 0.25)
+        glassSpec.cardBackgroundColor,
         glassSpec.cardBackgroundColor.copy(alpha = 0.22f)
       )
     )
@@ -252,10 +215,6 @@ fun LiquidGlassCard(
   }
 }
 
-/**
- * 1. Primary Button: full pill shape, purple gradient (#8B6CF0 to #A78BFA),
- * white text, glossy white shine on top edge, soft purple shadow below.
- */
 @Composable
 fun LiquidPrimaryButton(
   text: String,
@@ -316,10 +275,6 @@ fun LiquidPrimaryButton(
   }
 }
 
-/**
- * 2. Secondary Button: full pill shape, teal gradient (#5CC8C0 to #8EE0D6),
- * white text, glossy shine on top edge, soft teal shadow below.
- */
 @Composable
 fun LiquidSecondaryButton(
   text: String,
@@ -380,9 +335,6 @@ fun LiquidSecondaryButton(
   }
 }
 
-/**
- * 3. Round Icon Button: solid soft-white circle (#F8F5F7) with a "+" icon and soft drop shadow.
- */
 @Composable
 fun SoftWhiteRoundIconButton(
   icon: ImageVector = Icons.Default.Add,
@@ -413,9 +365,6 @@ fun SoftWhiteRoundIconButton(
   }
 }
 
-/**
- * 4. Clear Glass Circle Button: see-through glass bubble with a small icon, light border and inner shine.
- */
 @Composable
 fun ClearGlassCircleButton(
   icon: ImageVector,
@@ -458,11 +407,6 @@ fun ClearGlassCircleButton(
   }
 }
 
-/**
- * 6. Search Bar with Checkbox & Rainbow Arrow Button:
- * Glass pill, purple filled circle with a white tick on the left, search input,
- * and rainbow-border circle arrow button on the right.
- */
 @Composable
 fun LiquidGlassSearchBar(
   query: String,
@@ -494,7 +438,6 @@ fun LiquidGlassSearchBar(
       .padding(horizontal = 10.dp),
     verticalAlignment = Alignment.CenterVertically
   ) {
-    // Purple filled circle with white tick on the left
     Box(
       modifier = Modifier
         .size(34.dp)
@@ -539,7 +482,6 @@ fun LiquidGlassSearchBar(
 
     Spacer(modifier = Modifier.width(8.dp))
 
-    // Rainbow-border circle arrow button on the right
     Box(
       modifier = Modifier
         .size(36.dp)
@@ -559,9 +501,6 @@ fun LiquidGlassSearchBar(
   }
 }
 
-/**
- * 7. Soft-White Pill Input Field with label, placeholder, optional trailing icon, and soft shadow.
- */
 @Composable
 fun LiquidPillTextField(
   value: String,
@@ -628,10 +567,6 @@ fun LiquidPillTextField(
   }
 }
 
-/**
- * 8 & 10. Liquid Glass Chip & Success Chip
- * Small glass pill with text and an icon or green verification tick.
- */
 @Composable
 fun LiquidGlassChip(
   text: String,
@@ -701,9 +636,6 @@ fun LiquidGlassChip(
   }
 }
 
-/**
- * 9. Toggle Switch: glass pill track with a soft-white round knob holding a "+" icon.
- */
 @Composable
 fun LiquidGlassToggle(
   checked: Boolean,
@@ -763,10 +695,6 @@ fun LiquidGlassToggle(
   }
 }
 
-/**
- * 11. Tabs / Segmented Control: glass pill background.
- * Active tab is a solid soft-white pill. Inactive tab is see-through with a short purple underline.
- */
 @Composable
 fun LiquidSegmentedTabs(
   tabs: List<String>,
@@ -832,11 +760,6 @@ fun LiquidSegmentedTabs(
   }
 }
 
-/**
- * 12. Feature Card (bottom-right style):
- * Big gradient card (pink -> lavender -> sky blue -> cyan), 24.dp radius,
- * bold dark title, subtitle, white pill button with up-arrow icon, and small pill indicator at top-right.
- */
 @Composable
 fun LiquidFeatureGradientCard(
   title: String,
@@ -850,7 +773,7 @@ fun LiquidFeatureGradientCard(
   testTag: String? = null,
 ) {
   val glassSpec = LocalLiquidGlassSpec.current
-  val shape = RoundedCornerShape(glassSpec.surfaceCornerRadius) // 28.dp rounded corners
+  val shape = RoundedCornerShape(glassSpec.surfaceCornerRadius)
   val tagMod = if (testTag != null) Modifier.testTag(testTag) else Modifier
   Box(
     modifier = modifier
@@ -900,7 +823,6 @@ fun LiquidFeatureGradientCard(
             color = TextDark
           )
         }
-        // Small pill indicator at top-right
         Box(
           modifier = Modifier
             .clip(RoundedCornerShape(50))
@@ -938,7 +860,6 @@ fun LiquidFeatureGradientCard(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        // White pill button with up-arrow icon
         Row(
           modifier = Modifier
             .minimumInteractiveComponentSize()
@@ -977,9 +898,6 @@ fun LiquidFeatureGradientCard(
   }
 }
 
-/**
- * Status Badge for Orders, Quotations, Listings, and Mobile Crusher Bookings
- */
 @Composable
 fun StatusPillBadge(
   status: String,
@@ -1013,10 +931,6 @@ fun StatusPillBadge(
   }
 }
 
-/**
- * Custom Industrial Material & Mobile Crusher Illustration Banner
- * Renders rich architectural/industrial visuals for each C&D material or crusher category.
- */
 @Composable
 fun MaterialVisualBanner(
   imageKey: String,
@@ -1070,7 +984,6 @@ fun MaterialVisualBanner(
       )
       .border(1.dp, Color.White.copy(alpha = 0.55f), shape)
   ) {
-    // Geometric aggregate/industrial texture overlay
     Canvas(modifier = Modifier.fillMaxSize()) {
       drawCircle(
         color = Color.White.copy(alpha = 0.08f),

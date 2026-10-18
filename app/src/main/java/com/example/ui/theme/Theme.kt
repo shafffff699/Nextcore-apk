@@ -25,14 +25,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/**
- * Specification tokens for the NEXCORE 'Liquid Glass' Material3 Theme Wrapper:
- * - 28.dp rounded corners for surfaces
- * - Backdrop blur radius (frosted glass effect)
- * - Glassmorphism card background: rgba(255, 255, 255, 0.25)
- * - Crisp white specular borders
- * - Soft warm cream-green to cool blue-grey background gradient
- */
 @Immutable
 data class LiquidGlassThemeSpec(
   val surfaceCornerRadius: Dp = 28.dp,
@@ -50,46 +42,36 @@ data class LiquidGlassThemeSpec(
 val LocalLiquidGlassSpec = staticCompositionLocalOf { LiquidGlassThemeSpec() }
 
 private val LiquidGlassMaterialColorScheme = lightColorScheme(
-  primary = AccentBluePurple,               // NEXCORE Logo Emerald (#059669)
+  primary = AccentBluePurple,
   onPrimary = TextLight,
-  primaryContainer = Color(0xFFD1FAE5),     // Soft Warm Emerald Container
-  onPrimaryContainer = Color(0xFF064E3B),   // Deep Forest Green
-  secondary = NexcoreDeepNavy,              // Dark Industrial Navy (#0F172A)
+  primaryContainer = Color(0xFFD1FAE5),
+  onPrimaryContainer = Color(0xFF064E3B),
+  secondary = NexcoreDeepNavy,
   onSecondary = TextLight,
-  secondaryContainer = BgCoolBlueGrey,      // Cool Blue-Grey Container
+  secondaryContainer = BgCoolBlueGrey,
   onSecondaryContainer = TextDark,
-  tertiary = NexcoreLimeFacet,              // Logo Bright Leaf Green (#22C55E)
+  tertiary = NexcoreLimeFacet,
   onTertiary = TextLight,
-  background = BgWarmCreamGreen,            // Soft Warm Cream-Green base
-  onBackground = TextDark,                  // Dark Charcoal (#0F172A)
-  surface = GlassCardFill25,                // Glassmorphism rgba(255, 255, 255, 0.25)
+  background = BgWarmCreamGreen,
+  onBackground = TextDark,
+  surface = GlassCardFill25,
   onSurface = TextDark,
-  surfaceVariant = GlassPanelFill,          // Frosted Glass Panel Fill
+  surfaceVariant = GlassPanelFill,
   onSurfaceVariant = TextSecondary,
-  outline = GlassBorderWhite,               // White Glass Border
-  outlineVariant = GlassInnerShine,         // Specular Top Highlight
+  outline = GlassBorderWhite,
+  outlineVariant = GlassInnerShine,
   error = DangerCoral,
   onError = TextLight
 )
 
-/**
- * Material3 Shapes with 28.dp rounded corners for surfaces and cards.
- */
 val LiquidGlassShapes = Shapes(
   extraSmall = RoundedCornerShape(14.dp),
   small = RoundedCornerShape(20.dp),
-  medium = RoundedCornerShape(28.dp),       // 28.dp rounded corners for standard cards/surfaces
-  large = RoundedCornerShape(28.dp),        // 28.dp rounded corners for main glass panels
-  extraLarge = RoundedCornerShape(50)       // Full pill shape for buttons, inputs & chips
+  medium = RoundedCornerShape(28.dp),
+  large = RoundedCornerShape(28.dp),
+  extraLarge = RoundedCornerShape(50)
 )
 
-/**
- * Reusable Modifier that applies the 'Liquid Glass' surface treatment:
- * - 28.dp rounded corners (default)
- * - Soft ambient drop shadow
- * - Glassmorphism card background: rgba(255, 255, 255, 0.25) with subtle top-to-bottom frost sheen
- * - Crisp 1.5.dp white border with specular top edge highlight
- */
 fun Modifier.liquidGlassSurface(
   cornerRadius: Dp = 28.dp,
   backgroundColor: Color = GlassCardFill25,
@@ -123,13 +105,6 @@ fun Modifier.liquidGlassSurface(
     .border(width = 1.5.dp, brush = resolvedBorderBrush, shape = shape)
 }
 
-/**
- * Custom Material3 Theme Wrapper implementing the 'Liquid Glass' UI requirements:
- * - 28.dp rounded corners for surfaces
- * - Backdrop blur effects on the ambient glass canvas
- * - Glassmorphism card backgrounds (rgba(255, 255, 255, 0.25) with white borders)
- * - Soft warm cream-green to cool blue-grey background gradient
- */
 @Composable
 fun LiquidGlassTheme(
   spec: LiquidGlassThemeSpec = LiquidGlassThemeSpec(),
@@ -153,11 +128,6 @@ fun LiquidGlassTheme(
   }
 }
 
-/**
- * Renders the soft warm cream-green to cool blue-grey gradient background with a blurred
- * ambient light layer (`Modifier.blur`) so translucent rgba(255, 255, 255, 0.25) cards
- * exhibit a true frosted backdrop blur effect.
- */
 @Composable
 fun LiquidGlassBackdropBox(
   modifier: Modifier = Modifier,
@@ -165,7 +135,6 @@ fun LiquidGlassBackdropBox(
   content: @Composable BoxScope.() -> Unit,
 ) {
   Box(modifier = modifier.fillMaxSize()) {
-    // Backdrop Layer: Soft warm cream-green to cool blue-grey gradient + blurred ambient orbs
     Box(
       modifier = Modifier
         .fillMaxSize()
@@ -230,7 +199,6 @@ fun LiquidGlassBackdropBox(
         }
     )
 
-    // Foreground Content Layer
     content()
   }
 }

@@ -341,12 +341,10 @@ service cloud.firestore {
                        incoming().createdAt == existing().createdAt && (
                          isAdmin() || (
                            !(existing().orderStatus in ['Completed', 'Cancelled']) && (
-                             // Action 1: Buyer accepts, cancels, or updates payment/status on their quote
                              (existing().buyerId == request.auth.uid &&
                               incoming().diff(existing()).affectedKeys().hasOnly([
                                 'orderStatus', 'paymentStatus', 'buyerMessage', 'updatedAt'
                               ])) ||
-                             // Action 2: Seller submits quotation pricing or updates fulfillment status
                              (existing().sellerId == request.auth.uid &&
                               incoming().diff(existing()).affectedKeys().hasOnly([
                                 'unitPrice', 'materialSubtotal', 'transportCost', 'processingFee',
