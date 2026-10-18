@@ -141,7 +141,7 @@ fun NexcoreAppRoot() {
   } else {
     val viewModel = remember(uid) {
       NexcoreViewModel(
-        repository = NexcoreRepository(db = Firebase.firestore),
+        repository = NexcoreRepository(context = context),
         currentUserId = uid
       )
     }

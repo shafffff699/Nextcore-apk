@@ -1,9 +1,12 @@
 package com.example.data
 
+import android.content.Context
+import com.example.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +18,12 @@ class NexcoreRepository(
   private val db: FirebaseFirestore,
   private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
 ) {
+  constructor(context: Context) : this(
+    db = FirebaseFirestore.getInstance(
+      context.applicationContext.getString(R.string.firestore_database_id)
+    ),
+    auth = FirebaseAuth.getInstance()
+  )
 
   private fun DocumentSnapshot.toUserProfileModel(): UserProfile? {
     if (!exists()) return null
@@ -156,6 +165,12 @@ class NexcoreRepository(
     try {
       val doc = db.collection("users").document(userId).get().await()
       doc.toUserProfileModel()
+    } catch (e: FirebaseFirestoreException) {
+      if (e.code == FirebaseFirestoreException.Code.UNAVAILABLE) {
+        null
+      } else {
+        handleFirestoreError(e, OperationType.GET, "users/$userId", auth)
+      }
     } catch (e: Exception) {
       handleFirestoreError(e, OperationType.GET, "users/$userId", auth)
     }

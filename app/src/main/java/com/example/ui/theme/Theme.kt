@@ -108,7 +108,7 @@ fun Modifier.liquidGlassSurface(
 @Composable
 fun LiquidGlassTheme(
   spec: LiquidGlassThemeSpec = LiquidGlassThemeSpec(),
-  wrapWithLiquidBackdrop: Boolean = true,
+  wrapWithLiquidBackdrop: Boolean = false,
   content: @Composable () -> Unit,
 ) {
   CompositionLocalProvider(LocalLiquidGlassSpec provides spec) {
@@ -138,7 +138,6 @@ fun LiquidGlassBackdropBox(
     Box(
       modifier = Modifier
         .fillMaxSize()
-        .blur(radius = spec.backdropBlurRadius)
         .drawWithCache {
           val baseGradient = Brush.linearGradient(
             colors = listOf(
