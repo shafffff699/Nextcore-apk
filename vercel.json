@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "name": "nexcore-marketplace",
+  "public": true,
+  "cleanUrls": true,
+  "outputDirectory": "web",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

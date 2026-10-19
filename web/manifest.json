@@ -1,0 +1,17 @@
+{
+  "name": "NEXCORE — C&D Waste Marketplace",
+  "short_name": "NEXCORE",
+  "description": "Construction Waste. Renewed Value. Buy recycled materials, sell C&D debris, or book mobile crushing services.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8EFE6",
+  "theme_color": "#6D28D9",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "images/img_recycled_aggregates.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    }
+  ]
+}
