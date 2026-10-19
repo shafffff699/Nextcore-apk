@@ -185,6 +185,13 @@ html, body {
   flex-shrink: 0;
 }
 
+.brand-logo-img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  display: block;
+}
+
 .brand-title {
   font-size: 1.15rem;
   font-weight: 800;

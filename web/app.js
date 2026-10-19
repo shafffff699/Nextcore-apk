@@ -506,7 +506,7 @@ function renderHomeScreen() {
     <section class="hero-banner">
       <div class="hero-top-row">
         <div style="display:flex; align-items:center; gap:10px;">
-          <div class="brand-logo-box" style="width:36px; height:36px;">♻</div>
+          <div class="brand-logo-box" style="width:36px; height:36px;"><img src="images/nexcore-logo.svg" alt="NEXCORE logo" class="brand-logo-img" /></div>
           <span style="font-weight:800; letter-spacing:0.08em;">NEXCORE</span>
         </div>
         <span class="hero-badge">Construction Waste. Renewed Value.</span>
@@ -1514,7 +1514,7 @@ function renderApp() {
       <div class="header-main-row">
         <div class="brand-cluster" onclick="navigateTo('HOME')">
           <div class="brand-logo-box">
-            <span style="font-size:1.35rem;">♻</span>
+            <img src="images/nexcore-logo.svg" alt="NEXCORE logo" class="brand-logo-img" />
           </div>
           <div>
             <div class="brand-title">NEXCORE</div>
