@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +66,7 @@ import com.example.ui.components.LiquidSecondaryButton
 import com.example.ui.components.MainGlassPanel
 import com.example.ui.components.MaterialVisualBanner
 import com.example.ui.components.StatusPillBadge
+import com.example.ui.components.categoryDrawableRes
 import com.example.ui.theme.AccentBluePurple
 import com.example.ui.theme.PrimaryPurpleBrush
 import com.example.ui.theme.SolidSoftWhite
@@ -264,17 +266,34 @@ fun HomeScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                   Box(
                     modifier = Modifier
-                      .size(40.dp)
-                      .clip(RoundedCornerShape(12.dp))
-                      .background(SolidSoftWhite),
-                    contentAlignment = Alignment.Center
+                      .fillMaxWidth()
+                      .height(84.dp)
+                      .clip(RoundedCornerShape(14.dp))
+                      .border(1.dp, Color.White.copy(alpha = 0.65f), RoundedCornerShape(14.dp))
                   ) {
-                    Icon(
-                      imageVector = icon,
+                    Image(
+                      painter = painterResource(
+                        id = categoryDrawableRes(imageKey = "", category = category)
+                      ),
                       contentDescription = category,
-                      tint = AccentBluePurple,
-                      modifier = Modifier.size(22.dp)
+                      contentScale = ContentScale.Crop,
+                      modifier = Modifier.fillMaxWidth().height(84.dp)
                     )
+                    Box(
+                      modifier = Modifier
+                        .padding(6.dp)
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(SolidSoftWhite.copy(alpha = 0.92f)),
+                      contentAlignment = Alignment.Center
+                    ) {
+                      Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = AccentBluePurple,
+                        modifier = Modifier.size(16.dp)
+                      )
+                    }
                   }
                   Text(
                     text = category,

@@ -96,16 +96,28 @@ fun SellWasteScreen(
   var deliveryOptions by rememberSaveable { mutableStateOf("Pickup or Delivery") }
   var transportIncluded by rememberSaveable { mutableStateOf(false) }
   var contactPreference by rememberSaveable { mutableStateOf("Platform Quote") }
-  var selectedImageKey by rememberSaveable { mutableStateOf("crushed_concrete") }
+  var selectedImageKey by rememberSaveable { mutableStateOf("recycled_concrete") }
   var validationError by rememberSaveable { mutableStateOf<String?>(null) }
 
   val imageOptions = listOf(
-    "crushed_concrete" to "Concrete Debris",
-    "recycled_concrete" to "Graded RCA",
-    "crushed_brick" to "Brick & Masonry",
-    "road_base" to "Road-Base",
-    "scrap_metal" to "Rebar & Steel"
+    "recycled_concrete" to "Recycled Aggregates",
+    "crushed_concrete" to "Crushed Concrete",
+    "crushed_brick" to "Recycled Bricks",
+    "road_base" to "Road-Base Materials",
+    "scrap_metal" to "Recovered Metal & Scrap"
   )
+
+  fun imageKeyForCategory(cat: String): String {
+    val c = cat.lowercase()
+    return when {
+      c.contains("recycled aggregate") -> "recycled_concrete"
+      c.contains("concrete") -> "crushed_concrete"
+      c.contains("brick") || c.contains("masonry") -> "crushed_brick"
+      c.contains("road") || c.contains("asphalt") || c.contains("sub-base") -> "road_base"
+      c.contains("metal") || c.contains("scrap") -> "scrap_metal"
+      else -> "recycled_concrete"
+    }
+  }
 
   Column(
     modifier = Modifier
@@ -137,6 +149,7 @@ fun SellWasteScreen(
             } else {
               SampleMarketplaceData.materialCategories.first()
             }
+            selectedImageKey = imageKeyForCategory(selectedCategory)
           }
         )
 
@@ -188,7 +201,10 @@ fun SellWasteScreen(
             LiquidGlassChip(
               text = cat,
               selected = selectedCategory == cat,
-              onClick = { selectedCategory = cat }
+              onClick = {
+                selectedCategory = cat
+                selectedImageKey = imageKeyForCategory(cat)
+              }
             )
           }
         }

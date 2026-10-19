@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -931,6 +932,26 @@ fun StatusPillBadge(
   }
 }
 
+fun categoryDrawableRes(imageKey: String, category: String): Int {
+  val keyLower = imageKey.lowercase()
+  val catLower = category.lowercase()
+  return when {
+    keyLower == "recycled_concrete" || catLower.contains("recycled aggregate") ->
+      R.drawable.img_recycled_aggregates
+    keyLower == "crushed_concrete" || catLower.contains("concrete") ->
+      R.drawable.img_crushed_concrete
+    keyLower == "crushed_brick" || catLower.contains("brick") || catLower.contains("masonry") ->
+      R.drawable.img_recycled_bricks
+    keyLower == "road_base" || catLower.contains("road") || catLower.contains("asphalt") ->
+      R.drawable.img_road_base
+    keyLower == "scrap_metal" || catLower.contains("metal") || catLower.contains("scrap") ->
+      R.drawable.img_recovered_metal
+    keyLower == "mobile_crusher" || catLower.contains("crusher") || catLower.contains("crushing") ->
+      R.drawable.img_mobile_crusher
+    else -> R.drawable.img_recycled_aggregates
+  }
+}
+
 @Composable
 fun MaterialVisualBanner(
   imageKey: String,
@@ -938,7 +959,7 @@ fun MaterialVisualBanner(
   isSample: Boolean,
   modifier: Modifier = Modifier,
 ) {
-  val (gradStart, gradEnd, icon) = when (imageKey) {
+  val (_, _, icon) = when (imageKey) {
     "recycled_concrete", "crushed_concrete" -> Triple(
       Color(0xFF334155),
       Color(0xFF64748B),
@@ -971,32 +992,36 @@ fun MaterialVisualBanner(
     )
   }
 
+  val drawableRes = categoryDrawableRes(imageKey = imageKey, category = category)
   val shape = RoundedCornerShape(18.dp)
   Box(
     modifier = modifier
       .fillMaxWidth()
-      .height(130.dp)
+      .height(144.dp)
       .clip(shape)
-      .background(
-        brush = Brush.linearGradient(
-          colors = listOf(gradStart, gradEnd)
-        )
-      )
-      .border(1.dp, Color.White.copy(alpha = 0.55f), shape)
+      .border(1.dp, Color.White.copy(alpha = 0.65f), shape)
   ) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-      drawCircle(
-        color = Color.White.copy(alpha = 0.08f),
-        radius = size.minDimension * 0.45f,
-        center = Offset(size.width * 0.82f, size.height * 0.25f)
-      )
-      drawRoundRect(
-        color = Color.White.copy(alpha = 0.06f),
-        topLeft = Offset(size.width * 0.08f, size.height * 0.55f),
-        size = Size(size.width * 0.45f, size.height * 0.35f),
-        cornerRadius = CornerRadius(18f, 18f)
-      )
-    }
+    Image(
+      painter = painterResource(id = drawableRes),
+      contentDescription = category,
+      contentScale = ContentScale.Crop,
+      modifier = Modifier.fillMaxSize()
+    )
+
+    // Subtle dark gradient scrim for badge and text legibility
+    Box(
+      modifier = Modifier
+        .fillMaxSize()
+        .background(
+          brush = Brush.verticalGradient(
+            colors = listOf(
+              Color.Black.copy(alpha = 0.25f),
+              Color.Transparent,
+              Color.Black.copy(alpha = 0.62f)
+            )
+          )
+        )
+    )
 
     Row(
       modifier = Modifier
@@ -1016,8 +1041,8 @@ fun MaterialVisualBanner(
           Box(
             modifier = Modifier
               .clip(RoundedCornerShape(50))
-              .background(Color.Black.copy(alpha = 0.35f))
-              .border(1.dp, Color.White.copy(alpha = 0.4f), RoundedCornerShape(50))
+              .background(Color.Black.copy(alpha = 0.45f))
+              .border(1.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(50))
               .padding(horizontal = 10.dp, vertical = 4.dp)
           ) {
             Text(
@@ -1033,7 +1058,7 @@ fun MaterialVisualBanner(
             Box(
               modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .background(WarningAmber.copy(alpha = 0.9f))
+                .background(WarningAmber.copy(alpha = 0.92f))
                 .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
               Text(
@@ -1051,14 +1076,15 @@ fun MaterialVisualBanner(
           Icon(
             imageVector = icon,
             contentDescription = category,
-            tint = TextLight.copy(alpha = 0.92f),
-            modifier = Modifier.size(28.dp)
+            tint = TextLight.copy(alpha = 0.95f),
+            modifier = Modifier.size(22.dp)
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
             text = "NEXCORE Verified Spec Format",
             style = MaterialTheme.typography.labelMedium.copy(
-              color = TextLight.copy(alpha = 0.85f)
+              color = TextLight.copy(alpha = 0.92f),
+              fontWeight = FontWeight.Medium
             )
           )
         }
