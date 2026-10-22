@@ -530,9 +530,9 @@ class NexcoreRepository(
     val transportCost = if (listing.transportIncluded || deliveryPreference.contains("Pickup", ignoreCase = true)) {
       0.0
     } else {
-      (qty * 3.5).coerceAtLeast(65.0)
+      (qty * 180.0).coerceAtLeast(3500.0)
     }
-    val processingFee = 25.0
+    val processingFee = (materialSubtotal * 0.025).coerceAtLeast(1000.0)
     val taxAmount = (materialSubtotal + transportCost + processingFee) * 0.08
     val totalAmount = materialSubtotal + transportCost + processingFee + taxAmount
 

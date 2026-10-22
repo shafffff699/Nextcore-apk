@@ -105,6 +105,9 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 
+import androidx.compose.runtime.DisposableEffect
+import com.google.firebase.auth.FirebaseAuth
+
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -128,6 +131,16 @@ fun NexcoreAppRoot() {
   }
   var pendingDraft by remember {
     mutableStateOf<RegistrationDraft?>(null)
+  }
+
+  DisposableEffect(Unit) {
+    val listener = FirebaseAuth.AuthStateListener { auth ->
+      currentUserId = auth.currentUser?.uid
+    }
+    Firebase.auth.addAuthStateListener(listener)
+    onDispose {
+      Firebase.auth.removeAuthStateListener(listener)
+    }
   }
 
   val uid = currentUserId

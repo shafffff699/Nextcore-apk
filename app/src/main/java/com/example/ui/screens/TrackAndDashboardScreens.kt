@@ -242,7 +242,7 @@ private fun QuotationOrderCard(
             color = TextMuted
           )
           Text(
-            text = "$${String.format("%.2f", order.totalAmount)}",
+            text = "₹${String.format("%,.2f", order.totalAmount)}",
             style = MaterialTheme.typography.titleMedium.copy(
               color = AccentBluePurple,
               fontWeight = FontWeight.ExtraBold
@@ -253,7 +253,7 @@ private fun QuotationOrderCard(
       }
 
       Text(
-        text = "Material: $${String.format("%.2f", order.materialSubtotal)} • Haulage: $${String.format("%.2f", order.transportCost)} • Processing: $${String.format("%.2f", order.processingFee)} • Tax: $${String.format("%.2f", order.taxAmount)}",
+        text = "Material: ₹${String.format("%,.2f", order.materialSubtotal)} • Haulage: ₹${String.format("%,.2f", order.transportCost)} • Processing: ₹${String.format("%,.2f", order.processingFee)} • Tax: ₹${String.format("%,.2f", order.taxAmount)}",
         style = MaterialTheme.typography.bodySmall,
         color = TextSecondary
       )
@@ -345,7 +345,7 @@ private fun CrusherBookingTrackingCard(
           color = TextDark
         )
         Text(
-          text = "Est. Quote: $${String.format("%.2f", booking.quotedAmount)}",
+          text = "Est. Quote: ₹${String.format("%,.0f", booking.quotedAmount)}",
           style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
           color = AccentBluePurple
         )
@@ -470,7 +470,7 @@ fun DashboardScreen(
                           color = TextDark
                         )
                         Text(
-                          text = "${item.category} • $${String.format("%.2f", item.pricePerTonne)}/t • ${item.location}",
+                          text = "${item.category} • ₹${String.format("%,.0f", item.pricePerTonne)}/t • ${item.location}",
                           style = MaterialTheme.typography.bodySmall,
                           color = TextSecondary
                         )
@@ -501,7 +501,7 @@ fun DashboardScreen(
                         color = TextDark
                       )
                       Text(
-                        text = "${q.quantityTonnes.toInt()} t • Total: $${String.format("%.2f", q.totalAmount)}",
+                        text = "${q.quantityTonnes.toInt()} t • Total: ₹${String.format("%,.2f", q.totalAmount)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                       )
@@ -544,7 +544,7 @@ fun DashboardScreen(
                             color = TextDark
                           )
                           Text(
-                            text = "${listing.quantityTonnes.toInt()} t • $${String.format("%.2f", listing.pricePerTonne)}/t • ${listing.location}",
+                            text = "${listing.quantityTonnes.toInt()} t • ₹${String.format("%,.0f", listing.pricePerTonne)}/t • ${listing.location}",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary
                           )
@@ -788,15 +788,15 @@ private fun SellerRfqResponseCard(
         LiquidPillTextField(
           value = unitPriceText,
           onValueChange = { unitPriceText = it },
-          label = "Unit Price ($/t)",
-          placeholder = "16.50",
+          label = "Unit Price (₹/t)",
+          placeholder = "850",
           modifier = Modifier.weight(1f)
         )
         LiquidPillTextField(
           value = transportCostText,
           onValueChange = { transportCostText = it },
-          label = "Haulage ($)",
-          placeholder = "120.00",
+          label = "Haulage (₹)",
+          placeholder = "4500",
           modifier = Modifier.weight(1f)
         )
       }

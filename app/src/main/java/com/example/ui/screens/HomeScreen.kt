@@ -16,22 +16,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AddBusiness
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Factory
-import androidx.compose.material.icons.filled.Hardware
-import androidx.compose.material.icons.filled.Landscape
-import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Recycling
 import androidx.compose.material.icons.filled.RequestQuote
 import androidx.compose.material.icons.filled.Scale
 import androidx.compose.material.icons.filled.Storefront
@@ -44,8 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,10 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.data.MarketplaceListing
-import com.example.data.SampleMarketplaceData
 import com.example.data.UserProfile
 import com.example.ui.NexcoreDestination
-import com.example.ui.components.LiquidFeatureGradientCard
 import com.example.ui.components.LiquidGlassCard
 import com.example.ui.components.LiquidGlassChip
 import com.example.ui.components.LiquidGlassSearchBar
@@ -66,13 +55,10 @@ import com.example.ui.components.LiquidSecondaryButton
 import com.example.ui.components.MainGlassPanel
 import com.example.ui.components.MaterialVisualBanner
 import com.example.ui.components.StatusPillBadge
-import com.example.ui.components.categoryDrawableRes
 import com.example.ui.theme.AccentBluePurple
-import com.example.ui.theme.PrimaryPurpleBrush
 import com.example.ui.theme.SolidSoftWhite
 import com.example.ui.theme.SuccessGreen
 import com.example.ui.theme.TextDark
-import com.example.ui.theme.TextLight
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextSecondary
 
@@ -91,28 +77,12 @@ fun HomeScreen(
     modifier = Modifier
       .fillMaxWidth()
       .testTag("home_screen_container"),
-    verticalArrangement = Arrangement.spacedBy(20.dp)
+    verticalArrangement = Arrangement.spacedBy(18.dp)
   ) {
-    // Hero Section: "Give Waste a Second Life."
-    LiquidFeatureGradientCard(
-      title = "Give Waste a Second Life.",
-      subtitle = "Buy recycled construction materials, sell construction debris, or book mobile crushing services through one platform.",
-      badgeText = "Construction Waste. Renewed Value.",
-      buttonText = "Buy Materials",
-      onButtonClick = {
-        onNavigate(NexcoreDestination.BUY_MATERIALS, "All", "MATERIAL")
-      },
-      secondaryButtonText = "Book Mobile Crusher",
-      onSecondaryButtonClick = {
-        onNavigate(NexcoreDestination.BOOK_CRUSHER, null, null)
-      },
-      testTag = "home_hero_card"
-    )
-
-    // Primary Quick Actions + Search Bar inside Liquid Glass Panel
+    // Concise Quick Actions + Search Bar inside Liquid Glass Panel
     MainGlassPanel(
       title = "Explore NEXCORE Marketplace",
-      subtitle = "Find graded recycled aggregates, list C&D debris, or schedule on-site mobile crushing"
+      subtitle = "Find graded recycled aggregates, list C&D debris, or book on-site mobile crushing"
     ) {
       Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         LiquidGlassSearchBar(
@@ -158,175 +128,7 @@ fun HomeScreen(
       }
     }
 
-    // Section A: HOW NEXCORE WORKS
-    MainGlassPanel(
-      title = "How NEXCORE Works",
-      subtitle = "Four streamlined steps from demolition site debris to renewed engineering value"
-    ) {
-      Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        val steps = listOf(
-          Triple(
-            "Step 1",
-            "List Waste or Search Materials",
-            "List construction waste from your site or search verified recycled aggregates by sieve spec and location."
-          ),
-          Triple(
-            "Step 2",
-            "Connect Across the Circular Supply Chain",
-            "Connect directly with contractors, aggregate buyers, waste sellers, or certified recycling service providers."
-          ),
-          Triple(
-            "Step 3",
-            "Request Quotations or Book Mobile Crushing",
-            "Request transparent itemized material quotations or book mobile jaw/impact crushing at your site."
-          ),
-          Triple(
-            "Step 4",
-            "Recover & Dispatch Renewed Materials",
-            "Process suitable debris close to generation and connect recovered aggregates with nearby construction buyers."
-          )
-        )
-
-        steps.forEachIndexed { idx, (stepLabel, heading, body) ->
-          LiquidGlassCard(
-            cornerRadius = 22.dp,
-            iridescentBorder = idx == 0
-          ) {
-            Row(
-              verticalAlignment = Alignment.Top,
-              horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-              Box(
-                modifier = Modifier
-                  .size(38.dp)
-                  .clip(CircleShape)
-                  .background(brush = PrimaryPurpleBrush),
-                contentAlignment = Alignment.Center
-              ) {
-                Text(
-                  text = "${idx + 1}",
-                  style = MaterialTheme.typography.titleMedium.copy(
-                    color = TextLight,
-                    fontWeight = FontWeight.Bold
-                  )
-                )
-              }
-              Column(modifier = Modifier.weight(1f)) {
-                Text(
-                  text = "$stepLabel — $heading",
-                  style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                  color = TextDark
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                  text = body,
-                  style = MaterialTheme.typography.bodySmall,
-                  color = TextSecondary
-                )
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Section B: MARKETPLACE CATEGORIES
-    MainGlassPanel(
-      title = "Marketplace Categories",
-      subtitle = "Browse C&D materials and on-site processing by category"
-    ) {
-      Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SampleMarketplaceData.materialCategories.chunked(2).forEach { pair ->
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-          ) {
-            pair.forEach { category ->
-              val icon: ImageVector = when (category) {
-                "Recycled Aggregates" -> Icons.Default.Landscape
-                "Crushed Concrete" -> Icons.Default.Recycling
-                "Recycled Bricks" -> Icons.Default.Construction
-                "Road-Base Materials" -> Icons.Default.LocalShipping
-                "Recovered Metal and Scrap" -> Icons.Default.Hardware
-                else -> Icons.Default.Factory
-              }
-              LiquidGlassCard(
-                modifier = Modifier
-                  .weight(1f)
-                  .testTag("category_card_${category.take(10).lowercase().replace(" ", "_")}"),
-                cornerRadius = 24.dp,
-                onClick = {
-                  if (category == "Mobile Crushing Services") {
-                    onNavigate(NexcoreDestination.BOOK_CRUSHER, null, null)
-                  } else {
-                    onNavigate(NexcoreDestination.BUY_MATERIALS, category, "ALL")
-                  }
-                }
-              ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                  Box(
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .height(84.dp)
-                      .clip(RoundedCornerShape(14.dp))
-                      .border(1.dp, Color.White.copy(alpha = 0.65f), RoundedCornerShape(14.dp))
-                  ) {
-                    Image(
-                      painter = painterResource(
-                        id = categoryDrawableRes(imageKey = "", category = category)
-                      ),
-                      contentDescription = category,
-                      contentScale = ContentScale.Crop,
-                      modifier = Modifier.fillMaxWidth().height(84.dp)
-                    )
-                    Box(
-                      modifier = Modifier
-                        .padding(6.dp)
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(SolidSoftWhite.copy(alpha = 0.92f)),
-                      contentAlignment = Alignment.Center
-                    ) {
-                      Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = AccentBluePurple,
-                        modifier = Modifier.size(16.dp)
-                      )
-                    }
-                  }
-                  Text(
-                    text = category,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = TextDark,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                  )
-                  Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                  ) {
-                    Text(
-                      text = if (category == "Mobile Crushing Services") "Book Service" else "View Listings",
-                      style = MaterialTheme.typography.labelMedium,
-                      color = AccentBluePurple
-                    )
-                    Icon(
-                      imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                      contentDescription = null,
-                      tint = AccentBluePurple,
-                      modifier = Modifier.size(14.dp)
-                    )
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Section C: FEATURED LISTINGS
+    // Featured C&D Listings
     MainGlassPanel(
       title = "Featured C&D Listings",
       subtitle = "Verified recycled materials and segregated demolition debris ready for quote or pickup",
@@ -351,74 +153,61 @@ fun HomeScreen(
       }
     }
 
-    // Section D: MOBILE CRUSHER SERVICE HIGHLIGHT & CIRCULAR IMPACT
-    MainGlassPanel(
-      title = "On-Site Mobile Crushing & Circular Impact",
-      subtitle = "Process concrete and masonry debris directly at or near your demolition site"
+    // Concise Mobile Crusher Service Card
+    LiquidGlassCard(
+      cornerRadius = 24.dp,
+      iridescentBorder = true
     ) {
-      Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        LiquidGlassCard(
-          cornerRadius = 24.dp,
-          iridescentBorder = true
+      Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-          Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-              Box(
-                modifier = Modifier
-                  .size(42.dp)
-                  .clip(RoundedCornerShape(12.dp))
-                  .background(SolidSoftWhite)
-                  .padding(6.dp),
-                contentAlignment = Alignment.Center
-              ) {
-                Image(
-                  painter = painterResource(id = R.drawable.ic_nexcore_logo),
-                  contentDescription = "NEXCORE Emblem"
-                )
-              }
-              Column(modifier = Modifier.weight(1f)) {
-                Text(
-                  text = "Proposed Mobile Crusher Service",
-                  style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                  color = TextDark
-                )
-                Text(
-                  text = "Jaw & Impact Crushing • Magnetic Metal Separation • Multi-Deck Screening",
-                  style = MaterialTheme.typography.bodySmall,
-                  color = TextSecondary
-                )
-              }
-            }
-
+          Box(
+            modifier = Modifier
+              .size(40.dp)
+              .clip(RoundedCornerShape(12.dp))
+              .background(SolidSoftWhite)
+              .padding(6.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            Image(
+              painter = painterResource(id = R.drawable.ic_nexcore_logo),
+              contentDescription = "NEXCORE Emblem"
+            )
+          }
+          Column(modifier = Modifier.weight(1f)) {
             Text(
-              text = "Reduce haulage fees and landfill tipping charges by processing uncontaminated concrete and brick rubble close to where it is generated—then use recovered aggregate on-site or list surplus stock on NEXCORE.",
-              style = MaterialTheme.typography.bodySmall,
+              text = "On-Site Mobile Crusher Service",
+              style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
               color = TextDark
             )
-
-            Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-              LiquidPrimaryButton(
-                text = "Book Mobile Crusher",
-                icon = Icons.Default.Factory,
-                onClick = { onNavigate(NexcoreDestination.BOOK_CRUSHER, null, null) },
-                modifier = Modifier.weight(1f),
-                testTag = "highlight_book_crusher_button"
-              )
-              LiquidSecondaryButton(
-                text = "Post Waste Listing",
-                icon = Icons.Default.Eco,
-                onClick = { onNavigate(NexcoreDestination.SELL_WASTE, null, null) },
-                modifier = Modifier.weight(1f),
-                testTag = "highlight_post_waste_button"
-              )
-            }
+            Text(
+              text = "Jaw & Impact Crushing • Magnetic Separation • Multi-Deck Screening",
+              style = MaterialTheme.typography.bodySmall,
+              color = TextSecondary
+            )
           }
+        }
+
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+          LiquidPrimaryButton(
+            text = "Book Crusher",
+            icon = Icons.Default.Factory,
+            onClick = { onNavigate(NexcoreDestination.BOOK_CRUSHER, null, null) },
+            modifier = Modifier.weight(1f),
+            testTag = "highlight_book_crusher_button"
+          )
+          LiquidSecondaryButton(
+            text = "Post Waste",
+            icon = Icons.Default.Eco,
+            onClick = { onNavigate(NexcoreDestination.SELL_WASTE, null, null) },
+            modifier = Modifier.weight(1f),
+            testTag = "highlight_post_waste_button"
+          )
         }
       }
     }
@@ -497,7 +286,7 @@ fun MarketplaceListingCard(
       ) {
         Column {
           Text(
-            text = "$${String.format("%.2f", listing.pricePerTonne)} ${listing.unit}",
+            text = "₹${String.format("%,.0f", listing.pricePerTonne)} ${listing.unit}",
             style = MaterialTheme.typography.titleMedium.copy(
               fontWeight = FontWeight.ExtraBold,
               fontSize = 18.sp

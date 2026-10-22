@@ -169,14 +169,14 @@ fun BuyMaterialsScreen(
         ) {
           Column(modifier = Modifier.weight(1f)) {
             Text(
-              text = "Max Price: $${filterState.maxPricePerTonne.toInt()}/t",
+              text = "Max Price: ₹${filterState.maxPricePerTonne.toInt()}/t",
               style = MaterialTheme.typography.labelMedium,
               color = TextDark
             )
             Slider(
               value = filterState.maxPricePerTonne,
               onValueChange = onMaxPriceChange,
-              valueRange = 5f..500f,
+              valueRange = 200f..25000f,
               colors = SliderDefaults.colors(
                 thumbColor = AccentBluePurple,
                 activeTrackColor = AccentBluePurple
@@ -314,9 +314,9 @@ private fun ListingDetailView(
   val estTransport = if (listing.transportIncluded || deliveryPreference == "Buyer Self-Pickup") {
     0.0
   } else {
-    (qtyTonnes * 3.25).coerceAtLeast(95.0)
+    (qtyTonnes * 180.0).coerceAtLeast(3500.0)
   }
-  val estProcessing = (estSubtotal * 0.025).coerceAtLeast(25.0)
+  val estProcessing = (estSubtotal * 0.025).coerceAtLeast(1000.0)
   val estTax = (estSubtotal + estTransport + estProcessing) * 0.08
   val estTotal = estSubtotal + estTransport + estProcessing + estTax
 
@@ -392,7 +392,7 @@ private fun ListingDetailView(
                 color = TextSecondary
               )
               Text(
-                text = "$${String.format("%.2f", listing.pricePerTonne)} ${listing.unit}",
+                text = "₹${String.format("%,.0f", listing.pricePerTonne)} ${listing.unit}",
                 style = MaterialTheme.typography.headlineMedium.copy(
                   color = AccentBluePurple,
                   fontWeight = FontWeight.ExtraBold
@@ -596,7 +596,7 @@ private fun ListingDetailView(
                 color = TextDark
               )
               Text(
-                text = "$${String.format("%.2f", estTotal)}",
+                text = "₹${String.format("%,.2f", estTotal)}",
                 style = MaterialTheme.typography.titleMedium.copy(
                   fontWeight = FontWeight.ExtraBold,
                   fontSize = 18.sp
@@ -679,7 +679,7 @@ private fun QuoteLineItem(label: String, amount: Double) {
       color = TextSecondary
     )
     Text(
-      text = "$${String.format("%.2f", amount)}",
+      text = "₹${String.format("%,.2f", amount)}",
       style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
       color = TextDark
     )

@@ -1,5 +1,5 @@
 // NEXCORE — C&D Waste Management Digital Marketplace (Web & Mobile PWA)
-const STORAGE_KEY = 'nexcore_marketplace_state_v1';
+const STORAGE_KEY = 'nexcore_marketplace_state_inr_v2';
 
 const MATERIAL_CATEGORIES = [
   'Recycled Aggregates',
@@ -39,7 +39,7 @@ const INITIAL_LISTINGS = [
     description: 'Clean, screened 20mm recycled concrete aggregate suitable for sub-base, drainage backfill, and temporary haul roads. Processed from segregated commercial structural concrete.',
     conditionSpecs: 'Sieve graded 0-20mm; <1% deleterious material; LA abrasion tested; moisture 4.2%.',
     quantityTonnes: 450,
-    pricePerTonne: 16.50,
+    pricePerTonne: 850,
     unit: 'per tonne',
     priceType: 'Fixed Price',
     location: 'North Industrial Yard, Sector 4',
@@ -63,7 +63,7 @@ const INITIAL_LISTINGS = [
     description: 'Segregated reinforced concrete foundation debris from commercial warehouse demolition. Rebar sheared and primary broken, ready for mobile jaw crushing or off-site recycling.',
     conditionSpecs: 'Uncontaminated C&D concrete; zero asbestos/gypsum; pieces <450mm.',
     quantityTonnes: 680,
-    pricePerTonne: 8.00,
+    pricePerTonne: 450,
     unit: 'per tonne',
     priceType: 'Negotiable',
     location: 'East Docklands Site, Gate B',
@@ -87,7 +87,7 @@ const INITIAL_LISTINGS = [
     description: 'Crushed clay brick and masonry aggregate ideal for lightly trafficked sub-bases, hardstands, compound areas, and landscape drainage layers.',
     conditionSpecs: '40mm down well-graded crushed masonry; magnetically separated.',
     quantityTonnes: 220,
-    pricePerTonne: 14.00,
+    pricePerTonne: 720,
     unit: 'per tonne',
     priceType: 'Fixed Price',
     location: 'West Ring Road Recycling Hub',
@@ -111,7 +111,7 @@ const INITIAL_LISTINGS = [
     description: 'Blended crushed concrete and mineral aggregate engineered for road sub-bases, parking pads, and heavy equipment access tracks.',
     conditionSpecs: '0-40mm unbound mixture; CBR >80% laboratory test report available on request.',
     quantityTonnes: 850,
-    pricePerTonne: 19.00,
+    pricePerTonne: 950,
     unit: 'per tonne',
     priceType: 'Negotiable',
     location: 'Central Logistics Corridor, Mile 12',
@@ -135,7 +135,7 @@ const INITIAL_LISTINGS = [
     description: 'Magnetically separated reinforcing steel and structural I-beam offcuts recovered during bridge and commercial frame dismantling.',
     conditionSpecs: 'Clean ferrous steel scrap; Concrete spalling removed; bundled for crane/grab loading.',
     quantityTonnes: 65,
-    pricePerTonne: 210.00,
+    pricePerTonne: 18500,
     unit: 'per tonne',
     priceType: 'Negotiable',
     location: 'Harbor Industrial Salvage Yard',
@@ -149,6 +149,13 @@ const INITIAL_LISTINGS = [
     createdAt: Date.now() - 86400000
   }
 ];
+
+function formatInr(amount, decimals = 0) {
+  return '₹' + Number(amount || 0).toLocaleString('en-IN', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
+}
 
 function categoryImageUrl(imageKey, category) {
   const key = (imageKey || '').toLowerCase();
@@ -211,7 +218,7 @@ function loadAppState() {
           fullName: 'Site Operations Manager',
           companyName: 'Circular Civil Contractors Ltd',
           email: 'operations@nexcore-circular.com',
-          phone: '+1 555-0192',
+          phone: '+91 98765 43210',
           city: 'North Industrial Corridor',
           accountType: 'Buyer / Customer',
           isVerified: true,
@@ -227,8 +234,8 @@ function loadAppState() {
             category: 'Recycled Aggregates',
             sellerName: 'Metro Aggregate Recovery Ltd (Sample)',
             quantityTonnes: 60,
-            unitPrice: 16.50,
-            totalAmount: 1317.60,
+            unitPrice: 850,
+            totalAmount: 68121,
             deliveryPreference: 'Site Delivery Required',
             orderStatus: 'Quote Received',
             paymentStatus: 'Awaiting Confirmation',
@@ -240,13 +247,13 @@ function loadAppState() {
             id: 'cb_demo_1',
             bookingRef: 'CRB-40192',
             customerName: 'Site Operations Manager',
-            contactNumber: '+1 555-0192',
+            contactNumber: '+91 98765 43210',
             siteLocation: 'East Docklands Demolition Plot 7',
             wasteType: 'Concrete Debris',
             estimatedTonnes: 350,
             serviceType: 'Crushing & Multi-Deck Screening',
             preferredDate: 'Next Monday',
-            quotedAmount: 3912.50,
+            quotedAmount: 182500,
             status: 'Scheduled'
           }
         ],
@@ -264,7 +271,7 @@ function loadAppState() {
       fullName: 'Site Operations Manager',
       companyName: 'Circular Civil Contractors Ltd',
       email: 'operations@nexcore-circular.com',
-      phone: '+1 555-0192',
+      phone: '+91 98765 43210',
       city: 'North Industrial Corridor',
       accountType: 'Buyer / Customer',
       isVerified: true,
@@ -280,8 +287,8 @@ function loadAppState() {
         category: 'Recycled Aggregates',
         sellerName: 'Metro Aggregate Recovery Ltd (Sample)',
         quantityTonnes: 60,
-        unitPrice: 16.50,
-        totalAmount: 1317.60,
+        unitPrice: 850,
+        totalAmount: 68121,
         deliveryPreference: 'Site Delivery Required',
         orderStatus: 'Quote Received',
         paymentStatus: 'Awaiting Confirmation',
@@ -293,13 +300,13 @@ function loadAppState() {
         id: 'cb_demo_1',
         bookingRef: 'CRB-40192',
         customerName: 'Site Operations Manager',
-        contactNumber: '+1 555-0192',
+        contactNumber: '+91 98765 43210',
         siteLocation: 'East Docklands Demolition Plot 7',
         wasteType: 'Concrete Debris',
         estimatedTonnes: 350,
         serviceType: 'Crushing & Multi-Deck Screening',
         preferredDate: 'Next Monday',
-        quotedAmount: 3912.50,
+        quotedAmount: 182500,
         status: 'Scheduled'
       }
     ],
@@ -313,7 +320,7 @@ const filters = {
   searchQuery: '',
   category: 'All',
   listingType: 'ALL',
-  maxPrice: 300,
+  maxPrice: 25000,
   minQty: 0,
   location: '',
   sortBy: 'Recently Listed'
@@ -325,7 +332,7 @@ const sellDraft = {
   category: 'Concrete Debris',
   imageKey: 'recycled_concrete',
   quantity: '150',
-  price: '14.50',
+  price: '850',
   priceType: 'Negotiable',
   location: '',
   preferredDate: 'Immediate / Within 7 Days',
@@ -481,7 +488,7 @@ function renderListingCard(item) {
       </p>
       <div class="flex-between" style="margin-bottom:10px;">
         <div>
-          <div class="price-highlight">$${Number(item.pricePerTonne).toFixed(2)} <span style="font-size:0.78rem; font-weight:600;">${escapeHtml(item.unit)}</span></div>
+          <div class="price-highlight">${formatInr(item.pricePerTonne)} <span style="font-size:0.78rem; font-weight:600;">${escapeHtml(item.unit)}</span></div>
           <div style="font-size:0.78rem; color:var(--text-secondary);">⚖ ${Number(item.quantityTonnes).toFixed(0)} tonnes available</div>
         </div>
         <div style="text-align:right;">
@@ -503,37 +510,15 @@ function renderListingCard(item) {
 function renderHomeScreen() {
   const listings = getAllListings();
   return `
-    <section class="hero-banner">
-      <div class="hero-top-row">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div class="brand-logo-box" style="width:36px; height:36px;">♻</div>
-          <span style="font-weight:800; letter-spacing:0.08em;">NEXCORE</span>
-        </div>
-        <span class="hero-badge">Construction Waste. Renewed Value.</span>
-      </div>
-      <h1 class="hero-title">Give Waste a Second Life.</h1>
-      <p class="hero-subtitle">
-        Buy recycled construction materials, sell construction debris, or book mobile crushing services through one unified circular construction marketplace for Windows & Mobile.
-      </p>
-      <div class="hero-cta-row">
-        <button class="btn-white-pill" onclick="navigateTo('BUY_MATERIALS', 'All', 'MATERIAL')">
-          Browse Recycled Materials ↑
-        </button>
-        <button class="btn-secondary" onclick="navigateTo('BOOK_CRUSHER')">
-          Book Mobile Crusher
-        </button>
-        <a class="btn-primary" href="https://github.com/shafffff699/Nextcore-apk/releases/latest/download/NEXCORE-debug.apk" target="_blank" rel="noopener">
-          ⬇ Download Android APK
-        </a>
-      </div>
-    </section>
-
     <section class="glass-panel">
       <div class="panel-header">
         <div>
           <h2 class="panel-title">Explore NEXCORE Marketplace</h2>
-          <p class="panel-subtitle">Find graded recycled aggregates, list C&D debris, or schedule on-site mobile crushing</p>
+          <p class="panel-subtitle">Find graded recycled aggregates, list C&D debris, or book on-site mobile crushing</p>
         </div>
+        <a class="btn-primary" style="padding:8px 14px; font-size:0.8rem;" href="https://github.com/shafffff699/Nextcore-apk/releases/latest/download/NEXCORE-debug.apk" target="_blank" rel="noopener">
+          ⬇ Download Android APK
+        </a>
       </div>
       <div style="display:flex; flex-direction:column; gap:14px;">
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -550,37 +535,10 @@ function renderHomeScreen() {
         </div>
         <div class="flex-wrap-chips">
           <button class="btn-primary" onclick="navigateTo('BUY_MATERIALS', 'All', 'MATERIAL')">🛒 Buy Materials</button>
-          <button class="btn-secondary" onclick="navigateTo('SELL_WASTE')">➕ Sell Waste / Materials</button>
+          <button class="btn-secondary" onclick="navigateTo('SELL_WASTE')">➕ Sell Waste</button>
           <button class="glass-chip" onclick="navigateTo('BOOK_CRUSHER')">🏭 Book Mobile Crusher</button>
           <button class="glass-chip" onclick="navigateTo('BUY_MATERIALS', 'All', 'ALL')">📍 Explore Nearby Listings</button>
         </div>
-      </div>
-    </section>
-
-    <section class="glass-panel">
-      <div class="panel-header">
-        <div>
-          <h2 class="panel-title">Marketplace Categories</h2>
-          <p class="panel-subtitle">Browse verified C&D materials and on-site processing in order</p>
-        </div>
-      </div>
-      <div class="grid-categories">
-        ${MATERIAL_CATEGORIES.map((cat, idx) => {
-          const img = categoryImageUrl('', cat);
-          const isCrusher = cat === 'Mobile Crushing Services';
-          return `
-            <div class="glass-card clickable" onclick="${isCrusher ? "navigateTo('BOOK_CRUSHER')" : `navigateTo('BUY_MATERIALS', '${cat}', 'ALL')`}">
-              <div class="category-thumb">
-                <img src="${img}" alt="${escapeHtml(cat)}" loading="lazy" />
-              </div>
-              <div style="font-size:0.72rem; font-weight:700; color:var(--primary-blue); margin-bottom:2px;">Category ${idx + 1}</div>
-              <h3 style="font-size:0.98rem; font-weight:800; margin-bottom:6px;">${escapeHtml(cat)}</h3>
-              <span style="font-size:0.8rem; font-weight:700; color:var(--primary-blue);">
-                ${isCrusher ? 'Book Service →' : 'View Listings →'}
-              </span>
-            </div>
-          `;
-        }).join('')}
       </div>
     </section>
 
@@ -599,32 +557,18 @@ function renderHomeScreen() {
       </div>
     </section>
 
-    <section class="glass-panel">
-      <div class="panel-header">
+    <section class="glass-card iridescent">
+      <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
         <div>
-          <h2 class="panel-title">How NEXCORE Works</h2>
-          <p class="panel-subtitle">Four streamlined steps from demolition site debris to renewed engineering value</p>
+          <h3 style="font-size:1.05rem; font-weight:800;">On-Site Mobile Crusher Service</h3>
+          <p style="font-size:0.84rem; color:var(--text-secondary);">
+            Jaw & Impact Crushing • Magnetic Separation • Multi-Deck Screening
+          </p>
         </div>
-      </div>
-      <div class="grid-2">
-        ${[
-          ['Step 1', 'List Waste or Search Materials', 'List construction waste from your site or search verified recycled aggregates by sieve spec and location.'],
-          ['Step 2', 'Connect Across the Circular Supply Chain', 'Connect directly with contractors, aggregate buyers, waste sellers, or certified recycling service providers.'],
-          ['Step 3', 'Request Quotations or Book Mobile Crushing', 'Request transparent itemized material quotations or book mobile jaw/impact crushing at your site.'],
-          ['Step 4', 'Recover & Dispatch Renewed Materials', 'Process suitable debris close to generation and connect recovered aggregates with nearby construction buyers.']
-        ].map(([step, title, desc], i) => `
-          <div class="glass-card ${i === 0 ? 'iridescent' : ''}">
-            <div style="display:flex; gap:12px; align-items:flex-start;">
-              <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--primary-purple), var(--primary-blue)); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                ${i + 1}
-              </div>
-              <div>
-                <h3 style="font-size:0.98rem; font-weight:800; margin-bottom:4px;">${step} — ${title}</h3>
-                <p style="font-size:0.84rem; color:var(--text-secondary); line-height:1.45;">${desc}</p>
-              </div>
-            </div>
-          </div>
-        `).join('')}
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-primary" onclick="navigateTo('BOOK_CRUSHER')">🏭 Book Crusher</button>
+          <button class="btn-secondary" onclick="navigateTo('SELL_WASTE')">♻ Post Waste</button>
+        </div>
       </div>
     </section>
   `;
@@ -687,8 +631,8 @@ function renderBuyMaterialsScreen() {
 
         <div class="grid-2">
           <div class="glass-input-group">
-            <label class="glass-label">Max Price: $${filters.maxPrice}/tonne</label>
-            <input type="range" min="5" max="300" value="${filters.maxPrice}" oninput="filters.maxPrice=Number(this.value); renderApp()" />
+            <label class="glass-label">Max Price: ${formatInr(filters.maxPrice)}/tonne</label>
+            <input type="range" min="200" max="25000" step="100" value="${filters.maxPrice}" oninput="filters.maxPrice=Number(this.value); renderApp()" />
           </div>
           <div class="glass-input-group">
             <label class="glass-label">Min Quantity: ${filters.minQty} tonnes</label>
@@ -760,7 +704,7 @@ window.resetFilters = function() {
   filters.searchQuery = '';
   filters.category = 'All';
   filters.listingType = 'ALL';
-  filters.maxPrice = 300;
+  filters.maxPrice = 25000;
   filters.minQty = 0;
   filters.location = '';
   filters.sortBy = 'Recently Listed';
@@ -771,8 +715,8 @@ function renderListingDetailView(item) {
   const isSaved = (state.userProfile.savedListingIds || []).includes(item.id);
   const defaultQty = Math.min(50, item.quantityTonnes);
   const subtotal = defaultQty * item.pricePerTonne;
-  const transport = item.transportIncluded ? 0 : Math.max(95, defaultQty * 3.25);
-  const processing = Math.max(25, subtotal * 0.025);
+  const transport = item.transportIncluded ? 0 : Math.max(3500, defaultQty * 180);
+  const processing = Math.max(1000, subtotal * 0.025);
   const tax = (subtotal + transport + processing) * 0.08;
   const total = subtotal + transport + processing + tax;
 
@@ -805,7 +749,7 @@ function renderListingDetailView(item) {
           <div class="flex-between">
             <div>
               <div style="font-size:0.78rem; color:var(--text-secondary);">Indicative Unit Price</div>
-              <div class="price-highlight" style="font-size:1.45rem;">$${Number(item.pricePerTonne).toFixed(2)} ${escapeHtml(item.unit)}</div>
+              <div class="price-highlight" style="font-size:1.45rem;">${formatInr(item.pricePerTonne)} ${escapeHtml(item.unit)}</div>
             </div>
             <div style="text-align:right;">
               <div style="font-size:0.78rem; color:var(--text-secondary);">Available Stock</div>
@@ -840,7 +784,7 @@ function renderListingDetailView(item) {
         <div class="panel-header">
           <div>
             <h2 class="panel-title">Request Official Quotation (RFQ)</h2>
-            <p class="panel-subtitle">Instant itemized estimate with direct seller quote confirmation</p>
+            <p class="panel-subtitle">Instant itemized estimate in ₹ INR with direct seller quote confirmation</p>
           </div>
         </div>
 
@@ -876,24 +820,24 @@ function renderListingDetailView(item) {
             <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:8px;">Estimated Quotation Summary (${defaultQty} t)</h3>
             <div class="flex-between" style="font-size:0.84rem; margin-bottom:4px;">
               <span>Material Subtotal</span>
-              <strong>$${subtotal.toFixed(2)}</strong>
+              <strong>${formatInr(subtotal, 2)}</strong>
             </div>
             <div class="flex-between" style="font-size:0.84rem; margin-bottom:4px;">
               <span>Estimated Haulage / Transport</span>
-              <strong>$${transport.toFixed(2)}</strong>
+              <strong>${formatInr(transport, 2)}</strong>
             </div>
             <div class="flex-between" style="font-size:0.84rem; margin-bottom:4px;">
               <span>Platform & Quality Processing Fee</span>
-              <strong>$${processing.toFixed(2)}</strong>
+              <strong>${formatInr(processing, 2)}</strong>
             </div>
             <div class="flex-between" style="font-size:0.84rem; margin-bottom:8px;">
               <span>Estimated Tax (8%)</span>
-              <strong>$${tax.toFixed(2)}</strong>
+              <strong>${formatInr(tax, 2)}</strong>
             </div>
             <div class="divider-line"></div>
             <div class="flex-between" style="font-size:1.05rem; font-weight:800;">
               <span>Total Estimated Order Value</span>
-              <span class="price-highlight">$${total.toFixed(2)}</span>
+              <span class="price-highlight">${formatInr(total, 2)}</span>
             </div>
           </div>
 
@@ -917,8 +861,8 @@ window.recalculateRfq = function(listingId) {
   const qty = Math.max(1, Number(qtyEl.value) || 1);
   const deliv = delEl.value;
   const subtotal = qty * item.pricePerTonne;
-  const transport = (item.transportIncluded || deliv.includes('Self-Pickup')) ? 0 : Math.max(95, qty * 3.25);
-  const processing = Math.max(25, subtotal * 0.025);
+  const transport = (item.transportIncluded || deliv.includes('Self-Pickup')) ? 0 : Math.max(3500, qty * 180);
+  const processing = Math.max(1000, subtotal * 0.025);
   const tax = (subtotal + transport + processing) * 0.08;
   const total = subtotal + transport + processing + tax;
 
@@ -926,24 +870,24 @@ window.recalculateRfq = function(listingId) {
     <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:8px;">Estimated Quotation Summary (${qty} t)</h3>
     <div class="flex-between" style="font-size:0.84rem; margin-bottom:4px;">
       <span>Material Subtotal</span>
-      <strong>$${subtotal.toFixed(2)}</strong>
+      <strong>${formatInr(subtotal, 2)}</strong>
     </div>
     <div class="flex-between" style="font-size:0.84rem; margin-bottom:4px;">
       <span>Estimated Haulage / Transport</span>
-      <strong>$${transport.toFixed(2)}</strong>
+      <strong>${formatInr(transport, 2)}</strong>
     </div>
     <div class="flex-between" style="font-size:0.84rem; margin-bottom:4px;">
       <span>Platform & Quality Processing Fee</span>
-      <strong>$${processing.toFixed(2)}</strong>
+      <strong>${formatInr(processing, 2)}</strong>
     </div>
     <div class="flex-between" style="font-size:0.84rem; margin-bottom:8px;">
       <span>Estimated Tax (8%)</span>
-      <strong>$${tax.toFixed(2)}</strong>
+      <strong>${formatInr(tax, 2)}</strong>
     </div>
     <div class="divider-line"></div>
     <div class="flex-between" style="font-size:1.05rem; font-weight:800;">
       <span>Total Estimated Order Value</span>
-      <span class="price-highlight">$${total.toFixed(2)}</span>
+      <span class="price-highlight">${formatInr(total, 2)}</span>
     </div>
   `;
 };
@@ -954,8 +898,8 @@ window.submitRfqOrder = function(listingId) {
   const qty = Math.max(1, Number(document.getElementById('rfq-qty-input')?.value) || 25);
   const deliv = document.getElementById('rfq-delivery-select')?.value || 'Site Delivery Required';
   const subtotal = qty * item.pricePerTonne;
-  const transport = (item.transportIncluded || deliv.includes('Self-Pickup')) ? 0 : Math.max(95, qty * 3.25);
-  const processing = Math.max(25, subtotal * 0.025);
+  const transport = (item.transportIncluded || deliv.includes('Self-Pickup')) ? 0 : Math.max(3500, qty * 180);
+  const processing = Math.max(1000, subtotal * 0.025);
   const tax = (subtotal + transport + processing) * 0.08;
   const total = subtotal + transport + processing + tax;
 
@@ -978,7 +922,7 @@ window.submitRfqOrder = function(listingId) {
   saveState();
   state.selectedListingId = null;
   state.currentTab = 'TRACK_ORDERS';
-  showBanner(`Submitted Quotation Request ${ref} for ${qty} tonnes of ${item.title}.`);
+  showBanner(`Submitted Quotation Request ${ref} for ${qty} tonnes (${formatInr(total, 2)}).`);
 };
 
 function renderSellWasteScreen() {
@@ -987,21 +931,13 @@ function renderSellWasteScreen() {
     : MATERIAL_CATEGORIES.filter(c => c !== 'Mobile Crushing Services');
 
   return `
-    <section class="hero-banner">
-      <div class="hero-top-row">
-        <span class="hero-badge">Post a Listing</span>
-      </div>
-      <h1 class="hero-title">Turn Demolition Debris Into Revenue</h1>
-      <p class="hero-subtitle">Post segregated concrete, brick rubble, or processed recycled aggregates directly to verified regional buyers.</p>
-      <button class="btn-white-pill" onclick="navigateTo('BOOK_CRUSHER')">Need On-Site Crushing First? →</button>
-    </section>
-
     <section class="glass-panel">
       <div class="panel-header">
         <div>
           <h2 class="panel-title">Create Marketplace Listing</h2>
           <p class="panel-subtitle">Choose whether you are listing raw site debris or processed recycled materials</p>
         </div>
+        <button class="glass-chip" onclick="navigateTo('BOOK_CRUSHER')">🏭 Need On-Site Crushing First?</button>
       </div>
 
       <div style="display:flex; flex-direction:column; gap:16px;">
@@ -1059,8 +995,8 @@ function renderSellWasteScreen() {
             <input type="number" class="glass-input" value="${escapeHtml(sellDraft.quantity)}" oninput="sellDraft.quantity = this.value" />
           </div>
           <div class="glass-input-group">
-            <label class="glass-label">Price / Tonne (USD) *</label>
-            <input type="number" step="0.5" class="glass-input" value="${escapeHtml(sellDraft.price)}" oninput="sellDraft.price = this.value" />
+            <label class="glass-label">Price / Tonne (₹ INR) *</label>
+            <input type="number" step="10" class="glass-input" value="${escapeHtml(sellDraft.price)}" oninput="sellDraft.price = this.value" />
           </div>
         </div>
 
@@ -1127,7 +1063,7 @@ window.publishListing = function() {
     return;
   }
   if (qty <= 0 || isNaN(price) || price < 0) {
-    showBanner('Please enter valid tonnage (>0) and price per tonne.');
+    showBanner('Please enter valid tonnage (>0) and price per tonne in ₹.');
     return;
   }
 
@@ -1163,17 +1099,17 @@ window.publishListing = function() {
   filters.category = 'All';
   filters.listingType = 'ALL';
   state.currentTab = 'BUY_MATERIALS';
-  showBanner(`Published "${newListing.title}" to the live NEXCORE Marketplace!`);
+  showBanner(`Published "${newListing.title}" (${formatInr(price)}/t) to the live NEXCORE Marketplace!`);
 };
 
 function renderBookCrusherScreen() {
   const tonnes = Math.max(50, Number(crusherDraft.estimatedTonnes) || 350);
-  const mobilization = 850;
+  const mobilization = 25000;
   const rate = crusherDraft.serviceType === 'Primary Jaw Crushing Only'
-    ? 6.50
+    ? 320
     : crusherDraft.serviceType === 'Multi-Deck Screening Only'
-    ? 4.25
-    : 8.75;
+    ? 220
+    : 450;
   const estimate = mobilization + tonnes * rate;
 
   return `
@@ -1196,9 +1132,9 @@ function renderBookCrusherScreen() {
           <div class="flex-between">
             <div>
               <div style="font-size:0.78rem; color:var(--text-secondary);">Estimated Mobilization & Processing Cost</div>
-              <div class="price-highlight" style="font-size:1.5rem;">$${estimate.toFixed(2)}</div>
+              <div class="price-highlight" style="font-size:1.5rem;">${formatInr(estimate)}</div>
               <div style="font-size:0.8rem; color:var(--text-secondary);">
-                Includes $850 mobilization + $${rate.toFixed(2)}/t (${tonnes} tonnes)
+                Includes ₹25,000 mobilization + ₹${rate}/t (${tonnes} tonnes)
               </div>
             </div>
             <span class="${statusBadgeClass('On-Site Service')}">On-Site Service</span>
@@ -1272,8 +1208,8 @@ window.submitCrusherBooking = function() {
     return;
   }
   const tonnes = Math.max(50, Number(crusherDraft.estimatedTonnes) || 350);
-  const rate = crusherDraft.serviceType === 'Primary Jaw Crushing Only' ? 6.50 : crusherDraft.serviceType === 'Multi-Deck Screening Only' ? 4.25 : 8.75;
-  const quote = 850 + tonnes * rate;
+  const rate = crusherDraft.serviceType === 'Primary Jaw Crushing Only' ? 320 : crusherDraft.serviceType === 'Multi-Deck Screening Only' ? 220 : 450;
+  const quote = 25000 + tonnes * rate;
   const ref = 'CRB-' + Math.floor(10000 + Math.random() * 90000);
 
   state.crusherBookings.unshift({
@@ -1291,7 +1227,7 @@ window.submitCrusherBooking = function() {
   });
   saveState();
   state.currentTab = 'TRACK_ORDERS';
-  showBanner(`Mobile Crusher Booking ${ref} submitted for ${tonnes} tonnes at ${crusherDraft.siteLocation}!`);
+  showBanner(`Mobile Crusher Booking ${ref} submitted (${formatInr(quote)}) for ${tonnes} tonnes!`);
 };
 
 function renderTrackOrdersScreen() {
@@ -1317,7 +1253,7 @@ function renderTrackOrdersScreen() {
               Supplier: ${escapeHtml(q.sellerName)} • ${q.quantityTonnes} tonnes • ${escapeHtml(q.deliveryPreference)}
             </p>
             <div class="flex-between">
-              <span class="price-highlight">$${Number(q.totalAmount).toFixed(2)}</span>
+              <span class="price-highlight">${formatInr(q.totalAmount, 2)}</span>
               <button class="glass-chip active" onclick="advanceQuotationStatus('${q.id}')">
                 Advance Status →
               </button>
@@ -1348,7 +1284,7 @@ function renderTrackOrdersScreen() {
               📍 ${escapeHtml(b.siteLocation)} • ⚙ ${escapeHtml(b.serviceType)} • 📅 ${escapeHtml(b.preferredDate)}
             </p>
             <div class="flex-between">
-              <span class="price-highlight">$${Number(b.quotedAmount).toFixed(2)}</span>
+              <span class="price-highlight">${formatInr(b.quotedAmount)}</span>
               <button class="glass-chip active" onclick="advanceBookingStatus('${b.id}')">
                 Advance Stage →
               </button>

@@ -89,7 +89,7 @@ fun SellWasteScreen(
     mutableStateOf("Segregated C&D material; zero asbestos or hazardous contamination.")
   }
   var quantityText by rememberSaveable { mutableStateOf("120") }
-  var priceText by rememberSaveable { mutableStateOf("12.50") }
+  var priceText by rememberSaveable { mutableStateOf("850") }
   var priceType by rememberSaveable { mutableStateOf("Negotiable") }
   var location by rememberSaveable { mutableStateOf("") }
   var preferredDate by rememberSaveable { mutableStateOf("Immediate / Within 7 Days") }
@@ -225,8 +225,8 @@ fun SellWasteScreen(
           LiquidPillTextField(
             value = priceText,
             onValueChange = { priceText = it },
-            label = "Price / Tonne (USD) *",
-            placeholder = "e.g., 14.00",
+            label = "Price / Tonne (₹ INR) *",
+            placeholder = "e.g., 850",
             trailingIcon = Icons.Default.AttachMoney,
             modifier = Modifier.weight(1f),
             testTag = "sell_price_input"
@@ -419,11 +419,11 @@ fun BookCrusherScreen(
   var formError by rememberSaveable { mutableStateOf<String?>(null) }
 
   val estTonnes = estimatedTonnesText.toDoubleOrNull()?.coerceAtLeast(50.0) ?: 350.0
-  val mobilizationFee = 850.0
+  val mobilizationFee = 25000.0
   val ratePerTonne = when (serviceType) {
-    "Primary Jaw Crushing Only" -> 6.50
-    "Multi-Deck Screening Only" -> 4.25
-    else -> 8.75
+    "Primary Jaw Crushing Only" -> 320.0
+    "Multi-Deck Screening Only" -> 220.0
+    else -> 450.0
   }
   val estimatedServiceQuote = mobilizationFee + (estTonnes * ratePerTonne)
 
@@ -457,14 +457,14 @@ fun BookCrusherScreen(
                 color = TextSecondary
               )
               Text(
-                text = "$${String.format("%.2f", estimatedServiceQuote)}",
+                text = "₹${String.format("%,.0f", estimatedServiceQuote)}",
                 style = MaterialTheme.typography.headlineMedium.copy(
                   color = AccentBluePurple,
                   fontWeight = FontWeight.ExtraBold
                 )
               )
               Text(
-                text = "Includes $850 mobilization + $${String.format("%.2f", ratePerTonne)}/t (${estTonnes.toInt()} t)",
+                text = "Includes ₹25,000 mobilization + ₹${ratePerTonne.toInt()}/t (${estTonnes.toInt()} t)",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary
               )
@@ -524,7 +524,7 @@ fun BookCrusherScreen(
               formError = null
             },
             label = "Site Phone *",
-            placeholder = "+1 555-0148",
+            placeholder = "+91 98765 43210",
             trailingIcon = Icons.Default.Phone,
             modifier = Modifier.weight(1f),
             testTag = "crusher_contact_input"

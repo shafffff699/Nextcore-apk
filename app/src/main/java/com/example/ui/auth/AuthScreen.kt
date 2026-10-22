@@ -375,7 +375,7 @@ fun AuthScreen(
               value = fullName,
               onValueChange = { fullName = it },
               label = "Full Name (or leave blank to use Google profile name)",
-              placeholder = "e.g., Marcus Vance",
+              placeholder = "e.g., Rajesh Sharma",
               trailingIcon = Icons.Default.Person,
               testTag = "auth_full_name_input"
             )
@@ -384,7 +384,7 @@ fun AuthScreen(
               value = companyName,
               onValueChange = { companyName = it },
               label = "Company / Contractor Name (Optional)",
-              placeholder = "e.g., Vance Civil & Demolition Ltd",
+              placeholder = "e.g., Sharma Civil & Demolition Pvt Ltd",
               trailingIcon = Icons.Default.Apartment,
               testTag = "auth_company_input"
             )
@@ -397,7 +397,7 @@ fun AuthScreen(
                 value = city,
                 onValueChange = { city = it },
                 label = "City / Service Area",
-                placeholder = "e.g., Austin, TX",
+                placeholder = "e.g., Bengaluru, KA",
                 trailingIcon = Icons.Default.LocationCity,
                 modifier = Modifier.weight(1f),
                 testTag = "auth_city_input"
@@ -407,7 +407,7 @@ fun AuthScreen(
                 value = phone,
                 onValueChange = { phone = it },
                 label = "Contact Phone",
-                placeholder = "+1 555-0192",
+                placeholder = "+91 98765 43210",
                 trailingIcon = Icons.Default.Phone,
                 modifier = Modifier.weight(1f),
                 testTag = "auth_phone_input"

@@ -39,7 +39,7 @@ data class MarketplaceFilterState(
   val listingTypeFilter: String = "ALL",
   val deliveryFilter: String = "All",
   val priceTypeFilter: String = "All",
-  val maxPricePerTonne: Float = 500f,
+  val maxPricePerTonne: Float = 25000f,
   val minQuantityTonnes: Float = 0f,
   val locationQuery: String = "",
   val sortBy: String = "Recently Listed",
